@@ -24,6 +24,11 @@ function ClaimItem({ claim, links }: ClaimItemProps) {
       <div className="collapse-content flex flex-col gap-3">
         <p className="text-sm text-base-content/60">
           Page {claim.source.page}: “{claim.source.quote}”
+          {claim.source.verified === false && (
+            <span className="badge badge-sm badge-warning ml-2">
+              unverified quote
+            </span>
+          )}
         </p>
 
         {links.length === 0 && (

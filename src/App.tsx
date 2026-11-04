@@ -1,23 +1,57 @@
 import { useState } from 'react'
-import { sampleGraph } from './data/sampleGraph'
+import { requestGraph } from './lib/api'
+import { extractText } from './lib/extractText'
+import { verifyQuotes } from './lib/verifyQuotes'
+import ErrorPage from './pages/ErrorPage'
 import LandingPage from './pages/LandingPage'
+import LoadingPage from './pages/LoadingPage'
 import ResultsPage from './pages/ResultsPage'
+import type { PaperGraph } from './types/graph'
 
 function App() {
   const [file, setFile] = useState<File | null>(null)
+  const [graph, setGraph] = useState<PaperGraph | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  if (!file) {
-    return <LandingPage onUpload={setFile} />
+  async function handleUpload(newFile: File) {
+    setFile(newFile)
+    setGraph(null)
+    setError(null)
+
+    try {
+      const pages = await extractText(newFile)
+      const result = await requestGraph(pages)
+      setGraph(verifyQuotes(result, pages))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong.')
+    }
   }
 
-  // Sample data for now; real extraction comes in Phase 2.
-  return (
-    <ResultsPage
-      graph={sampleGraph}
-      fileName={file.name}
-      onReset={() => setFile(null)}
-    />
-  )
+  function reset() {
+    setFile(null)
+    setGraph(null)
+    setError(null)
+  }
+
+  if (!file) {
+    return <LandingPage onUpload={handleUpload} />
+  }
+
+  if (error) {
+    return (
+      <ErrorPage
+        message={error}
+        onRetry={() => handleUpload(file)}
+        onReset={reset}
+      />
+    )
+  }
+
+  if (!graph) {
+    return <LoadingPage fileName={file.name} />
+  }
+
+  return <ResultsPage graph={graph} fileName={file.name} onReset={reset} />
 }
 
 export default App
