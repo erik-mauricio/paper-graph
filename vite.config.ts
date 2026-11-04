@@ -5,4 +5,8 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    // Send /api requests to our Express server (server/index.ts).
+    proxy: { '/api': 'http://localhost:3001' },
+  },
 })
