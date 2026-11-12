@@ -15,7 +15,7 @@ function ResultsPage({ graph, fileName, onReset }: ResultsPageProps) {
 
   return (
     <div className="min-h-screen bg-base-200">
-      <div className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-10 sm:px-8">
+      <div className="mx-auto flex max-w-3xl flex-col gap-8 px-4 pt-20 pb-10 sm:px-8">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-sm text-base-content/60">{fileName}</p>
