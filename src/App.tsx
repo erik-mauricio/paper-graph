@@ -6,9 +6,23 @@ import ErrorPage from './pages/ErrorPage'
 import LandingPage from './pages/LandingPage'
 import LoadingPage from './pages/LoadingPage'
 import ResultsPage from './pages/ResultsPage'
+import ThemeToggle from './components/ThemeToggle'
 import type { PaperGraph } from './types/graph'
 
 function App() {
+  return (
+    <>
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+      <main>
+        <CurrentPage />
+      </main>
+    </>
+  )
+}
+
+function CurrentPage() {
   const [file, setFile] = useState<File | null>(null)
   const [graph, setGraph] = useState<PaperGraph | null>(null)
   const [error, setError] = useState<string | null>(null)

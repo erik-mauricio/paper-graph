@@ -29,7 +29,7 @@ function NodeDetails({ node, relation }: NodeDetailsProps) {
         “{node.source.quote}”
       </blockquote>
       <div className="flex items-center gap-2">
-        <p className="text-xs text-base-content/50">Page {node.source.page}</p>
+        <p className="text-xs text-base-content/70">Page {node.source.page}</p>
         {node.source.verified === false && (
           <span className="badge badge-sm badge-warning">unverified quote</span>
         )}
