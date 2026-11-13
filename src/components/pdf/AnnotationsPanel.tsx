@@ -260,7 +260,7 @@ function AnnotationRow({
           style={{ borderColor: HIGHLIGHT_COLORS[a.color].swatch }}
           onClick={() => onActivate(a.id)}
         >
-          <span className={`text-sm ${active ? '' : 'line-clamp-3'}`}>“{a.text}”</span>
+          <span className={`font-reading text-sm leading-relaxed ${active ? '' : 'line-clamp-3'}`}>“{a.text}”</span>
           <span className="badge badge-ghost badge-xs">p. {a.page}</span>
         </button>
 

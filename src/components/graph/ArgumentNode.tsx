@@ -7,7 +7,7 @@ import { GraphActionsContext } from './graphActions'
 
 const TYPE_STYLE: Record<NodeType, { label: string; badge: string; border: string }> = {
   claim: { label: 'Claim', badge: 'badge-primary', border: 'border-primary' },
-  evidence: { label: 'Evidence', badge: 'badge-secondary', border: 'border-base-300' },
+  evidence: { label: 'Evidence', badge: 'badge-secondary', border: 'border-secondary' },
   note: { label: 'Note', badge: 'badge-accent', border: 'border-accent border-dashed' },
 }
 
@@ -92,7 +92,7 @@ function ArgumentNode({ id, data, selected }: NodeProps<ArgumentFlowNode>) {
         )}
       </div>
 
-      <p className="line-clamp-3 text-sm leading-snug">{node.text}</p>
+      <p className="line-clamp-3 font-reading text-sm leading-snug">{node.text}</p>
 
       {/* Drag the "+" onto another node to link them, or onto empty space to
           make a new linked node. Click it for more options. */}

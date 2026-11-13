@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
 
-const LIGHT = 'sage'
-const DARK = 'sage-dark'
+const LIGHT = 'paper'
+const DARK = 'paper-dark'
+// Theme names from before the warm theme, so a saved choice carries over.
+const OLD_NAMES: Record<string, string> = { sage: LIGHT, 'sage-dark': DARK }
 const STORAGE_KEY = 'theme'
 const darkQuery = '(prefers-color-scheme: dark)'
 
 function getSavedTheme(): string | null {
   try {
-    const t = localStorage.getItem(STORAGE_KEY)
+    const saved = localStorage.getItem(STORAGE_KEY)
+    const t = (saved && OLD_NAMES[saved]) || saved
     return t === LIGHT || t === DARK ? t : null
   } catch {
     return null

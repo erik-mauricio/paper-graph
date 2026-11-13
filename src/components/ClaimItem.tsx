@@ -16,7 +16,7 @@ function ClaimItem({ claim, links, onShowInPdf }: ClaimItemProps) {
       <summary className="collapse-title">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <span className="badge badge-primary badge-sm">Claim</span>
-          <span className="flex-1 font-semibold">{claim.text}</span>
+          <span className="flex-1 font-reading font-semibold leading-snug">{claim.text}</span>
           <span className="badge badge-ghost badge-sm shrink-0">
             {links.length} linked
           </span>

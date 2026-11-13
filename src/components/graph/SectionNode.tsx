@@ -13,6 +13,9 @@ function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(section.name)
   const color = HIGHLIGHT_COLORS[section.color]
+  // Highlight colors are tuned for the white PDF page; blending them with the
+  // card color keeps sections soft in both the light and dark theme.
+  const tint = (percent: number) => `color-mix(in oklab, ${color.swatch} ${percent}%, var(--color-base-100))`
 
   function startRename() {
     setDraft(section.name)
@@ -38,7 +41,7 @@ function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>) {
   return (
     <div
       className="h-full w-full rounded-box border-2"
-      style={{ borderColor: color.swatch, background: color.fill.replace('0.4', '0.12') }}
+      style={{ borderColor: tint(70), background: tint(12) }}
     >
       <NodeResizer
         isVisible={selected}
@@ -63,7 +66,7 @@ function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>) {
         ) : (
           <h3
             className="truncate rounded-field px-1.5 py-0.5 text-sm font-semibold"
-            style={{ background: color.fill }}
+            style={{ background: tint(35) }}
             onDoubleClick={startRename}
             title="Double-click to rename"
           >

@@ -3,32 +3,35 @@
   themes: false;
 }
 
+/* Warm paper for long reading: cream surfaces, warm ink text, and an ink-blue accent.
+   Claims (blue), evidence (ochre) and notes (plum) differ in hue, and blue "supports"
+   vs vermilion "contradicts" stays readable for color-blind readers. */
 @plugin "daisyui/theme" {
-  name: "sage";
+  name: "paper";
   default: true;
   prefersdark: false;
   color-scheme: light;
 
-  --color-base-100: oklch(98.5% 0.008 130);
-  --color-base-200: oklch(95% 0.02 140);
-  --color-base-300: oklch(90% 0.03 140);
-  --color-base-content: oklch(28% 0.03 150);
-  --color-primary: oklch(52% 0.07 145);
-  --color-primary-content: oklch(98% 0.01 145);
-  --color-secondary: oklch(85% 0.05 140);
-  --color-secondary-content: oklch(30% 0.05 145);
-  --color-accent: oklch(70% 0.08 80);
-  --color-accent-content: oklch(25% 0.04 80);
-  --color-neutral: oklch(35% 0.03 150);
-  --color-neutral-content: oklch(96% 0.01 140);
-  --color-info: oklch(65% 0.1 230);
-  --color-info-content: oklch(98% 0.01 230);
-  --color-success: oklch(60% 0.12 150);
-  --color-success-content: oklch(98% 0.01 150);
-  --color-warning: oklch(80% 0.14 80);
-  --color-warning-content: oklch(25% 0.05 80);
-  --color-error: oklch(58% 0.17 30);
-  --color-error-content: oklch(98% 0.01 30);
+  --color-base-100: oklch(98.5% 0.012 85); /* cards and panels */
+  --color-base-200: oklch(95.5% 0.022 82); /* page and graph canvas */
+  --color-base-300: oklch(89% 0.03 78); /* borders */
+  --color-base-content: oklch(20% 0.03 55); /* text */
+  --color-primary: oklch(45% 0.11 250); /* claims, "supports" links, main buttons */
+  --color-primary-content: oklch(98% 0.01 85);
+  --color-secondary: oklch(86% 0.07 80); /* evidence */
+  --color-secondary-content: oklch(32% 0.06 65);
+  --color-accent: oklch(48% 0.1 330); /* your notes */
+  --color-accent-content: oklch(98% 0.01 85);
+  --color-neutral: oklch(32% 0.025 55);
+  --color-neutral-content: oklch(96% 0.012 85);
+  --color-info: oklch(52% 0.1 230);
+  --color-info-content: oklch(98% 0.01 85);
+  --color-success: oklch(50% 0.1 150);
+  --color-success-content: oklch(98% 0.01 85);
+  --color-warning: oklch(80% 0.13 75);
+  --color-warning-content: oklch(28% 0.05 60);
+  --color-error: oklch(56% 0.18 35); /* "contradicts" links, errors */
+  --color-error-content: oklch(98% 0.01 85);
 
   --radius-selector: 1rem;
   --radius-field: 0.5rem;
@@ -43,32 +46,33 @@
   --noise: 0;
 }
 
+/* Warm charcoal rather than black, with off-white text, to cut glare at night. */
 @plugin "daisyui/theme" {
-  name: "sage-dark";
+  name: "paper-dark";
   default: false;
   prefersdark: true;
   color-scheme: dark;
 
-  --color-base-100: oklch(24% 0.015 150);
-  --color-base-200: oklch(20% 0.014 150);
-  --color-base-300: oklch(31% 0.02 150);
-  --color-base-content: oklch(92% 0.015 140);
-  --color-primary: oklch(74% 0.09 145);
-  --color-primary-content: oklch(20% 0.03 145);
-  --color-secondary: oklch(40% 0.05 145);
-  --color-secondary-content: oklch(93% 0.02 140);
-  --color-accent: oklch(76% 0.09 80);
-  --color-accent-content: oklch(22% 0.04 80);
-  --color-neutral: oklch(32% 0.02 150);
-  --color-neutral-content: oklch(93% 0.01 140);
-  --color-info: oklch(74% 0.1 230);
+  --color-base-100: oklch(25% 0.015 60); /* cards and panels */
+  --color-base-200: oklch(21% 0.013 60); /* page and graph canvas */
+  --color-base-300: oklch(33% 0.02 60); /* borders */
+  --color-base-content: oklch(91% 0.02 80); /* text */
+  --color-primary: oklch(74% 0.1 245); /* claims, "supports" links, main buttons */
+  --color-primary-content: oklch(20% 0.03 250);
+  --color-secondary: oklch(45% 0.06 75); /* evidence */
+  --color-secondary-content: oklch(93% 0.03 85);
+  --color-accent: oklch(74% 0.1 330); /* your notes */
+  --color-accent-content: oklch(20% 0.03 330);
+  --color-neutral: oklch(33% 0.02 60);
+  --color-neutral-content: oklch(92% 0.015 80);
+  --color-info: oklch(74% 0.09 230);
   --color-info-content: oklch(20% 0.03 230);
-  --color-success: oklch(72% 0.12 150);
+  --color-success: oklch(72% 0.11 150);
   --color-success-content: oklch(20% 0.03 150);
-  --color-warning: oklch(82% 0.13 80);
-  --color-warning-content: oklch(22% 0.05 80);
-  --color-error: oklch(70% 0.16 30);
-  --color-error-content: oklch(20% 0.04 30);
+  --color-warning: oklch(82% 0.12 75);
+  --color-warning-content: oklch(22% 0.04 60);
+  --color-error: oklch(70% 0.16 35); /* "contradicts" links, errors */
+  --color-error-content: oklch(20% 0.04 35);
 
   --radius-selector: 1rem;
   --radius-field: 0.5rem;
@@ -81,12 +85,17 @@
 
   --depth: 1;
   --noise: 0;
+}
+
+/* Serif for reading text (quotes, node text); the UI keeps the system sans. */
+@theme {
+  --font-reading: "Literata", Georgia, "Times New Roman", serif;
 }
 
 /* Make React Flow follow the daisyUI theme in light and dark mode. */
 .react-flow {
   --xy-background-color: var(--color-base-200);
-  --xy-background-pattern-color: color-mix(in oklch, var(--color-base-content) 15%, transparent);
+  --xy-background-pattern-color: color-mix(in oklch, var(--color-base-content) 10%, transparent);
   --xy-edge-label-background-color: var(--color-base-100);
   --xy-edge-label-color: var(--color-base-content);
   --xy-minimap-background-color: var(--color-base-100);
@@ -161,7 +170,7 @@
   }
 
   ::selection {
-    background: rgb(37 99 235 / 0.3);
+    background: color-mix(in oklch, var(--color-primary) 30%, transparent);
     color: transparent;
   }
 

@@ -5,7 +5,7 @@ type QuoteProps = {
 // A passage quoted from the paper.
 function Quote({ text }: QuoteProps) {
   return (
-    <blockquote className="border-l-2 border-base-300 pl-3 text-sm italic text-base-content/70">
+    <blockquote className="max-w-prose border-l-2 border-base-300 pl-3 font-reading text-sm leading-relaxed italic text-base-content/70">
       “{text}”
     </blockquote>
   )
