@@ -3,13 +3,13 @@ import { useContext, useState, type KeyboardEvent, type MouseEvent } from 'react
 import { COLOR_NAMES, HIGHLIGHT_COLORS } from '../../lib/highlightColors'
 import type { SectionFlowNode } from '../../lib/layout'
 import { NODE_HEIGHT, NODE_WIDTH } from '../../lib/layout'
-import { SectionActionsContext } from './sectionActions'
+import { GraphActionsContext } from './graphActions'
 
 // A labeled, colored box the user draws to group nodes. Drag it to move
 // everything inside; drag nodes in or out to change what's in it.
 function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>) {
   const { section } = data
-  const actions = useContext(SectionActionsContext)
+  const actions = useContext(GraphActionsContext)
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(section.name)
   const color = HIGHLIGHT_COLORS[section.color]
@@ -21,7 +21,7 @@ function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>) {
 
   function finishRename() {
     const name = draft.trim()
-    if (name && name !== section.name) actions?.onRename(id, name)
+    if (name && name !== section.name) actions?.onRenameSection(id, name)
     setEditing(false)
   }
 
@@ -45,7 +45,7 @@ function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>) {
         minWidth={NODE_WIDTH + 32}
         minHeight={NODE_HEIGHT + 60}
         color={color.swatch}
-        onResizeEnd={(_, box) => actions?.onResizeEnd(id, box)}
+        onResizeEnd={(_, box) => actions?.onResizeSectionEnd(id, box)}
       />
 
       <div className="flex items-center gap-1 px-2 pt-1.5">
@@ -86,7 +86,7 @@ function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>) {
                     aria-pressed={section.color === name}
                     className={`btn btn-xs btn-square join-item ${section.color === name ? 'btn-active' : ''}`}
                     onClick={(e) => {
-                      actions?.onColor(id, name)
+                      actions?.onColorSection(id, name)
                       closeMenu(e)
                     }}
                   >
@@ -113,7 +113,7 @@ function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>) {
                 className="text-error"
                 onClick={(e) => {
                   closeMenu(e)
-                  actions?.onDelete(id)
+                  actions?.onDeleteSection(id)
                 }}
               >
                 Delete section

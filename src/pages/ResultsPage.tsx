@@ -2,7 +2,7 @@ import { useState, type CSSProperties, type KeyboardEvent, type PointerEvent } f
 import AppNavbar from '../components/AppNavbar'
 import ClaimItem from '../components/ClaimItem'
 import NodeDetails from '../components/NodeDetails'
-import GraphView, { type FocusNodeRequest } from '../components/graph/GraphView'
+import GraphView, { type AddNodeRequest, type FocusNodeRequest } from '../components/graph/GraphView'
 import NodeFormModal, { type NodeFormValue } from '../components/graph/NodeFormModal'
 import UndoToast from '../components/graph/UndoToast'
 import PdfPanel from '../components/pdf/PdfPanel'
@@ -25,7 +25,13 @@ type View = 'graph' | 'list'
 
 // The add/edit node dialog, when it's open.
 type NodeForm =
-  | { mode: 'add'; initial: NodeFormValue; source?: Source }
+  | {
+      mode: 'add'
+      initial: NodeFormValue
+      source?: Source
+      position?: AddNodeRequest['position']
+      link?: AddNodeRequest['link']
+    }
   | { mode: 'edit'; node: GraphNode; initial: NodeFormValue }
 
 const MIN_PDF_WIDTH = 25
@@ -47,11 +53,21 @@ function ResultsPage({ graph, file, fileName, onReset }: ResultsPageProps) {
   const [nodeForm, setNodeForm] = useState<NodeForm | null>(null)
   const [graphFocus, setGraphFocus] = useState<FocusNodeRequest | null>(null)
 
-  function openAddNode(source?: Source, text = '') {
+  // Opens the add-node form. From the graph it can come with a spot to put the
+  // node and a node to link it to; from a highlight it comes with a quote.
+  function openAddNode(request: AddNodeRequest & { source?: Source; text?: string } = {}) {
+    const { source, text = '', type, position, sectionId = null, link } = request
     setNodeForm({
       mode: 'add',
       source,
-      initial: { type: source ? 'evidence' : 'note', text, sectionId: null },
+      position,
+      link,
+      initial: {
+        type: type ?? (source ? 'evidence' : 'note'),
+        text,
+        sectionId,
+        relation: link?.relation,
+      },
     })
   }
 
@@ -65,7 +81,10 @@ function ResultsPage({ graph, file, fileName, onReset }: ResultsPageProps) {
 
   // A highlight in the PDF becomes an evidence node with a verified quote.
   function addFromHighlight(annotation: Annotation) {
-    openAddNode({ page: annotation.page, quote: annotation.text, verified: true }, annotation.note)
+    openAddNode({
+      source: { page: annotation.page, quote: annotation.text, verified: true },
+      text: annotation.note,
+    })
   }
 
   function saveNodeForm(value: NodeFormValue) {
@@ -74,7 +93,15 @@ function ResultsPage({ graph, file, fileName, onReset }: ResultsPageProps) {
       const node = editor.addNode(
         { type: value.type, text: value.text, source: nodeForm.source },
         value.sectionId,
+        // A spot picked on the canvas only applies if the section wasn't changed in the form.
+        value.sectionId === nodeForm.initial.sectionId ? nodeForm.position : undefined,
       )
+      const { link } = nodeForm
+      if (link) {
+        const relation = value.relation ?? link.relation
+        if (link.direction === 'in') editor.addEdge(node.id, link.otherId, relation)
+        else editor.addEdge(link.otherId, node.id, relation)
+      }
       setGraphFocus({ id: node.id, nonce: nextNonce() })
       return
     }
@@ -197,7 +224,7 @@ function ResultsPage({ graph, file, fileName, onReset }: ResultsPageProps) {
               editor={editor}
               onSelectNode={pdfOpen ? jumpTo : undefined}
               onShowInPdf={onShowInPdf}
-              onAddNode={() => openAddNode()}
+              onAddNode={openAddNode}
               onEditNode={openEditNode}
               focusRequest={graphFocus}
             />
@@ -258,6 +285,14 @@ function ResultsPage({ graph, file, fileName, onReset }: ResultsPageProps) {
           initial={nodeForm.initial}
           source={nodeForm.mode === 'edit' ? nodeForm.node.source : nodeForm.source}
           sections={editor.sections}
+          link={
+            nodeForm.mode === 'add' && nodeForm.link
+              ? {
+                  direction: nodeForm.link.direction,
+                  otherText: editor.graph.nodes.find((n) => n.id === nodeForm.link?.otherId)?.text ?? '',
+                }
+              : undefined
+          }
           onSubmit={saveNodeForm}
           onClose={() => setNodeForm(null)}
         />

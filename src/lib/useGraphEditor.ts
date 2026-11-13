@@ -94,15 +94,24 @@ export function useGraphEditor(key: string, aiGraph: PaperGraph) {
 
   // ---- Nodes ----
 
-  // Adds a node. New nodes stack in a column to the right of the AI's graph,
-  // where they won't cover anything; the user drags them where they want.
-  function addNode(input: NodeInput, sectionId: string | null = null): GraphNode {
+  // Adds a node. `at` is a spot on the canvas (top-left corner), e.g. where the
+  // user double-clicked or dropped a link. Without it, nodes go to a free slot
+  // in their section, or stack in a column right of the AI's graph.
+  function addNode(
+    input: NodeInput,
+    sectionId: string | null = null,
+    at?: { x: number; y: number },
+  ): GraphNode {
     const node: GraphNode = { id: newId('u'), origin: 'user', ...input }
 
     change((s) => {
       let position: NodePosition
       const section = s.sections.find((sec) => sec.id === sectionId)
-      if (section) {
+      if (at) {
+        position = section
+          ? { x: Math.max(GAP, at.x - section.x), y: Math.max(SECTION_HEADER, at.y - section.y), sectionId: section.id }
+          : { x: at.x, y: at.y, sectionId: null }
+      } else if (section) {
         position = slotInSection(s, section)
       } else {
         const loose = Object.entries(s.positions).filter(([, p]) => !p.sectionId)

@@ -1,6 +1,6 @@
 import { Graph, layout } from '@dagrejs/dagre'
 import { MarkerType, type Edge, type Node } from '@xyflow/react'
-import type { GraphEdge, GraphNode, PaperGraph, Section } from '../types/graph'
+import type { GraphEdge, GraphNode, PaperGraph, Relation, Section } from '../types/graph'
 
 export const NODE_WIDTH = 260
 export const NODE_HEIGHT = 112
@@ -77,15 +77,18 @@ export function toFlowNodes(
   return [...sectionNodes, ...argumentNodes]
 }
 
-export function toFlowEdge(edge: GraphEdge): Edge {
+export type ArgumentEdgeData = { relation: Relation }
+export type ArgumentFlowEdge = Edge<ArgumentEdgeData, 'argument'>
+
+export function toFlowEdge(edge: GraphEdge): ArgumentFlowEdge {
   const contradicts = edge.relation === 'contradicts'
   const color = contradicts ? 'var(--color-error)' : 'var(--color-primary)'
   return {
     id: edge.id,
+    type: 'argument',
     source: edge.from,
     target: edge.to,
-    // Only label the less common relation; color + dashes carry it too.
-    label: contradicts ? 'contradicts' : undefined,
+    data: { relation: edge.relation },
     className: contradicts ? 'edge-contradicts' : 'edge-supports',
     style: {
       stroke: color,

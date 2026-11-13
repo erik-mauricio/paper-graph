@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import type { NodeType, Section, Source } from '../../types/graph'
+import type { NodeType, Relation, Section, Source } from '../../types/graph'
 import Quote from '../Quote'
 import { useDialog } from './useDialog'
 
@@ -7,6 +7,8 @@ export type NodeFormValue = {
   type: NodeType
   text: string
   sectionId: string | null
+  // How the new node relates to the node it's linked to (when there is one).
+  relation?: Relation
 }
 
 type NodeFormModalProps = {
@@ -16,6 +18,8 @@ type NodeFormModalProps = {
   // Shown read-only when the node comes from the paper (an AI node or a highlight).
   source?: Source
   sections: Section[]
+  // Set when the new node will be linked to an existing one.
+  link?: { otherText: string; direction: 'in' | 'out' }
   onSubmit: (value: NodeFormValue) => void
   onClose: () => void
 }
@@ -33,6 +37,7 @@ function NodeFormModal({
   initial,
   source,
   sections,
+  link,
   onSubmit,
   onClose,
 }: NodeFormModalProps) {
@@ -83,6 +88,29 @@ function NodeFormModal({
             onChange={(e) => setValue((v) => ({ ...v, text: e.target.value }))}
           />
         </fieldset>
+
+        {link && value.relation && (
+          <fieldset className="fieldset">
+            <legend className="fieldset-legend">Link</legend>
+            <div className="flex flex-col gap-2 rounded-field border border-base-300 p-2 text-sm">
+              <p>{link.direction === 'in' ? 'This new node…' : <q className="line-clamp-2">{link.otherText}</q>}</p>
+              <div className="join" role="radiogroup" aria-label="Relation">
+                {(['supports', 'contradicts'] as const).map((r) => (
+                  <input
+                    key={r}
+                    type="radio"
+                    name="node-relation"
+                    className={`btn btn-sm join-item ${r === 'contradicts' && value.relation === r ? 'btn-error' : ''}`}
+                    aria-label={r === 'supports' ? 'Supports' : 'Contradicts'}
+                    checked={value.relation === r}
+                    onChange={() => setValue((v) => ({ ...v, relation: r }))}
+                  />
+                ))}
+              </div>
+              <p>{link.direction === 'in' ? <q className="line-clamp-2">{link.otherText}</q> : '…this new node.'}</p>
+            </div>
+          </fieldset>
+        )}
 
         {source && (
           <fieldset className="fieldset">
