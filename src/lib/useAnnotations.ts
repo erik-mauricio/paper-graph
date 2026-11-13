@@ -8,9 +8,13 @@ type Stored = {
 
 const EMPTY: Stored = { annotations: [], groups: [] }
 
-// Identifies a PDF well enough to keep its annotations separate from other papers.
+// Identifies a PDF well enough to keep its saved data separate from other papers.
+export function paperKey(file: File): string {
+  return `${file.name}:${file.size}:${file.lastModified}`
+}
+
 export function annotationKey(file: File): string {
-  return `annotations:${file.name}:${file.size}:${file.lastModified}`
+  return `annotations:${paperKey(file)}`
 }
 
 function load(key: string): Stored {

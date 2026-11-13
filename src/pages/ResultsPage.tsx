@@ -2,12 +2,16 @@ import { useState, type CSSProperties, type KeyboardEvent, type PointerEvent } f
 import AppNavbar from '../components/AppNavbar'
 import ClaimItem from '../components/ClaimItem'
 import NodeDetails from '../components/NodeDetails'
-import GraphView from '../components/graph/GraphView'
+import GraphView, { type FocusNodeRequest } from '../components/graph/GraphView'
+import NodeFormModal, { type NodeFormValue } from '../components/graph/NodeFormModal'
+import UndoToast from '../components/graph/UndoToast'
 import PdfPanel from '../components/pdf/PdfPanel'
 import { getClaims, getLinksTo, getUnlinkedEvidence } from '../lib/graph'
 import { nextNonce } from '../lib/pdf'
-import type { FocusRequest } from '../types/annotations'
-import type { GraphNode, PaperGraph } from '../types/graph'
+import { paperKey } from '../lib/useAnnotations'
+import { useGraphEditor } from '../lib/useGraphEditor'
+import type { Annotation, FocusRequest } from '../types/annotations'
+import type { GraphNode, PaperGraph, Source } from '../types/graph'
 
 type ResultsPageProps = {
   graph: PaperGraph
@@ -18,6 +22,11 @@ type ResultsPageProps = {
 }
 
 type View = 'graph' | 'list'
+
+// The add/edit node dialog, when it's open.
+type NodeForm =
+  | { mode: 'add'; initial: NodeFormValue; source?: Source }
+  | { mode: 'edit'; node: GraphNode; initial: NodeFormValue }
 
 const MIN_PDF_WIDTH = 25
 const MAX_PDF_WIDTH = 75
@@ -33,9 +42,54 @@ function ResultsPage({ graph, file, fileName, onReset }: ResultsPageProps) {
   const [pdfWidth, setPdfWidth] = useState(50) // percent of the screen
   const [focus, setFocus] = useState<FocusRequest | null>(null)
 
+  // The user's edits to the graph, saved per paper in this browser.
+  const editor = useGraphEditor(file ? `graph:${paperKey(file)}` : 'graph:sample', graph)
+  const [nodeForm, setNodeForm] = useState<NodeForm | null>(null)
+  const [graphFocus, setGraphFocus] = useState<FocusNodeRequest | null>(null)
+
+  function openAddNode(source?: Source, text = '') {
+    setNodeForm({
+      mode: 'add',
+      source,
+      initial: { type: source ? 'evidence' : 'note', text, sectionId: null },
+    })
+  }
+
+  function openEditNode(node: GraphNode) {
+    setNodeForm({
+      mode: 'edit',
+      node,
+      initial: { type: node.type, text: node.text, sectionId: editor.positions[node.id]?.sectionId ?? null },
+    })
+  }
+
+  // A highlight in the PDF becomes an evidence node with a verified quote.
+  function addFromHighlight(annotation: Annotation) {
+    openAddNode({ page: annotation.page, quote: annotation.text, verified: true }, annotation.note)
+  }
+
+  function saveNodeForm(value: NodeFormValue) {
+    if (!nodeForm) return
+    if (nodeForm.mode === 'add') {
+      const node = editor.addNode(
+        { type: value.type, text: value.text, source: nodeForm.source },
+        value.sectionId,
+      )
+      setGraphFocus({ id: node.id, nonce: nextNonce() })
+      return
+    }
+
+    const { node, initial } = nodeForm
+    // Only save real changes, so opening Edit and saving doesn't mark a node "edited".
+    if (value.type !== initial.type || value.text !== initial.text) {
+      editor.updateNode(node.id, { type: value.type, text: value.text })
+    }
+    if (value.sectionId !== initial.sectionId) editor.setNodeSection(node.id, value.sectionId)
+  }
+
   // Scrolls the PDF to a node's quote (without changing what's on screen).
   function jumpTo(node: GraphNode) {
-    if (!file) return
+    if (!file || !node.source) return
     setPdfLoaded(true)
     setFocus({ kind: 'quote', page: node.source.page, quote: node.source.quote, nonce: nextNonce() })
   }
@@ -96,9 +150,19 @@ function ResultsPage({ graph, file, fileName, onReset }: ResultsPageProps) {
         onBrandClick={onReset}
         center={
           <div className="flex min-w-0 flex-col px-1">
-            <h1 className="truncate font-semibold" title={graph.title}>
-              {graph.title}
-            </h1>
+            <div className="flex min-w-0 items-center gap-2">
+              <h1 className="truncate font-semibold" title={graph.title}>
+                {graph.title}
+              </h1>
+              {editor.edited && (
+                <span
+                  className="tooltip tooltip-bottom shrink-0"
+                  data-tip="You've changed this graph. Reset it from the ⋯ menu on the graph."
+                >
+                  <span className="badge badge-outline badge-xs">Edited</span>
+                </span>
+              )}
+            </div>
             <p className="truncate text-xs text-base-content/60">{fileName}</p>
           </div>
         }
@@ -130,13 +194,16 @@ function ResultsPage({ graph, file, fileName, onReset }: ResultsPageProps) {
         <div className={`min-h-0 min-w-0 flex-1 ${mobilePdf ? 'hidden lg:block' : ''}`}>
           {view === 'graph' ? (
             <GraphView
-              graph={graph}
+              editor={editor}
               onSelectNode={pdfOpen ? jumpTo : undefined}
               onShowInPdf={onShowInPdf}
+              onAddNode={() => openAddNode()}
+              onEditNode={openEditNode}
+              focusRequest={graphFocus}
             />
           ) : (
             <div className="h-full overflow-y-auto">
-              <ListView graph={graph} onShowInPdf={onShowInPdf} />
+              <ListView graph={editor.graph} onShowInPdf={onShowInPdf} />
             </div>
           )}
         </div>
@@ -166,7 +233,7 @@ function ResultsPage({ graph, file, fileName, onReset }: ResultsPageProps) {
               } ${pdfOpen ? 'lg:block' : 'lg:hidden'}`}
               style={{ '--pdf-width': `${pdfWidth}%` } as CSSProperties}
             >
-              <PdfPanel file={file} quoteFocus={focus} />
+              <PdfPanel file={file} quoteFocus={focus} onAddToGraph={addFromHighlight} />
             </section>
           </>
         )}
@@ -177,6 +244,33 @@ function ResultsPage({ graph, file, fileName, onReset }: ResultsPageProps) {
         <DockButton label="List" active={!mobilePdf && view === 'list'} onClick={() => showMobile('list')} />
         <DockButton label="PDF" active={mobilePdf} disabled={!file} onClick={() => showMobile('pdf')} />
       </nav>
+
+      {nodeForm && (
+        <NodeFormModal
+          title={
+            nodeForm.mode === 'edit'
+              ? 'Edit node'
+              : nodeForm.source
+                ? 'Add highlight to graph'
+                : 'Add a node'
+          }
+          submitLabel={nodeForm.mode === 'edit' ? 'Save' : 'Add to graph'}
+          initial={nodeForm.initial}
+          source={nodeForm.mode === 'edit' ? nodeForm.node.source : nodeForm.source}
+          sections={editor.sections}
+          onSubmit={saveNodeForm}
+          onClose={() => setNodeForm(null)}
+        />
+      )}
+
+      {editor.undo && (
+        <UndoToast
+          key={editor.undo.at}
+          message={editor.undo.message}
+          onUndo={editor.undoDelete}
+          onDismiss={editor.dismissUndo}
+        />
+      )}
     </div>
   )
 }
@@ -228,6 +322,7 @@ type ListViewProps = {
 function ListView({ graph, onShowInPdf }: ListViewProps) {
   const claims = getClaims(graph)
   const unlinkedEvidence = getUnlinkedEvidence(graph)
+  const notes = graph.nodes.filter((n) => n.type === 'note')
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-6 sm:px-8">
@@ -255,6 +350,15 @@ function ListView({ graph, onShowInPdf }: ListViewProps) {
             Evidence that was extracted but not connected to any claim.
           </p>
           {unlinkedEvidence.map((node) => (
+            <NodeDetails key={node.id} node={node} onShowInPdf={onShowInPdf} />
+          ))}
+        </section>
+      )}
+
+      {notes.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <div className="divider my-0">Your notes ({notes.length})</div>
+          {notes.map((node) => (
             <NodeDetails key={node.id} node={node} onShowInPdf={onShowInPdf} />
           ))}
         </section>

@@ -1,4 +1,7 @@
-export type NodeType = 'claim' | 'evidence'
+import type { HighlightColor } from './annotations.ts'
+
+// 'note' nodes are only ever made by the user.
+export type NodeType = 'claim' | 'evidence' | 'note'
 
 export type Relation = 'supports' | 'contradicts'
 
@@ -13,7 +16,12 @@ export type GraphNode = {
   id: string
   type: NodeType
   text: string
-  source: Source
+  // Where in the paper this came from. Missing for the user's free-text notes.
+  source?: Source
+  // Who made the node. Missing means the AI.
+  origin?: 'ai' | 'user'
+  // True once the user has changed an AI-made node.
+  edited?: boolean
 }
 
 // Edges point from the supporting item to the thing it supports,
@@ -35,4 +43,15 @@ export type PaperGraph = {
 export type PageText = {
   page: number
   text: string
+}
+
+// A labeled box the user draws on the graph to group nodes.
+export type Section = {
+  id: string
+  name: string
+  color: HighlightColor
+  x: number
+  y: number
+  width: number
+  height: number
 }

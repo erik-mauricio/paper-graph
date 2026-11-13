@@ -216,3 +216,25 @@
 @media (prefers-reduced-motion: reduce) {
   .pdf-flash { animation: none; }
 }
+
+/* Link handles: faint until you hover a node, so the graph stays calm.
+   Drag from a node's right handle to another node to link them. */
+.react-flow__handle.graph-handle {
+  width: 12px;
+  height: 12px;
+  background: var(--color-base-100);
+  border: 2px solid var(--color-primary);
+  opacity: 0.35;
+  transition: opacity 120ms ease;
+}
+.react-flow__node:hover .graph-handle,
+.react-flow__node.selected .graph-handle,
+.react-flow__handle.graph-handle.connectingfrom,
+.react-flow__handle.graph-handle.connectingto {
+  opacity: 1;
+}
+@media (hover: none) {
+  .react-flow__handle.graph-handle {
+    opacity: 1;
+  }
+}

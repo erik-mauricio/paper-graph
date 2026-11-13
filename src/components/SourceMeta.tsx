@@ -8,6 +8,9 @@ type SourceMetaProps = {
 // Where a node's quote comes from: page, whether it was verified, and a
 // button to jump to it in the PDF.
 function SourceMeta({ node, onShowInPdf }: SourceMetaProps) {
+  // The user's own notes have no source in the paper.
+  if (!node.source) return null
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       <span className="badge badge-ghost badge-sm">Page {node.source.page}</span>

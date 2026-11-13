@@ -15,22 +15,23 @@ function normalize(text: string): string {
 
 // Checks one node's quote. If it's on a different page than stated, fixes the page.
 function verifyNode(node: GraphNode, pages: PageText[]): GraphNode {
-  const quote = normalize(node.source.quote)
-  const statedPage = pages.find((p) => p.page === node.source.page)
+  const source = node.source
+  // The user's own notes have nothing to check.
+  if (!source) return node
+
+  const quote = normalize(source.quote)
+  const statedPage = pages.find((p) => p.page === source.page)
 
   if (statedPage && normalize(statedPage.text).includes(quote)) {
-    return { ...node, source: { ...node.source, verified: true } }
+    return { ...node, source: { ...source, verified: true } }
   }
 
   const actualPage = pages.find((p) => normalize(p.text).includes(quote))
   if (actualPage) {
-    return {
-      ...node,
-      source: { ...node.source, page: actualPage.page, verified: true },
-    }
+    return { ...node, source: { ...source, page: actualPage.page, verified: true } }
   }
 
-  return { ...node, source: { ...node.source, verified: false } }
+  return { ...node, source: { ...source, verified: false } }
 }
 
 // Marks each quote as verified or not by searching the paper's text.
