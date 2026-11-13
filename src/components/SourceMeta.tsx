@@ -1,4 +1,6 @@
-import type { GraphNode } from '../types/graph'
+// A node's page number, an "Unverified" badge if its quote wasn't found, and
+// "Show in PDF". Shared by the graph panel and List view.
+import type { GraphNode } from '@shared/graph'
 
 type SourceMetaProps = {
   node: GraphNode

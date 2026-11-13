@@ -1,5 +1,6 @@
-import AppNavbar from '../components/AppNavbar'
-import UploadForm from '../components/UploadForm'
+// The first page: what PaperGraph does, and the upload form.
+import AppNavbar from '@/app/AppNavbar'
+import UploadForm from '@/features/upload/UploadForm'
 
 type LandingPageProps = {
   onUpload: (file: File) => void

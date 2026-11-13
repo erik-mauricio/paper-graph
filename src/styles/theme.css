@@ -1,0 +1,95 @@
+/* daisyUI setup and PaperGraph's two themes ("paper" light, "paper-dark"),
+   plus the serif reading font. Theme names are also used in app/ThemeToggle.tsx
+   and the pre-paint script in index.html. */
+@plugin "daisyui" {
+  themes: false;
+}
+
+/* Warm paper for long reading: cream surfaces, warm ink text, and an ink-blue accent.
+   Claims (blue), evidence (ochre) and notes (plum) differ in hue, and blue "supports"
+   vs vermilion "contradicts" stays readable for color-blind readers. */
+@plugin "daisyui/theme" {
+  name: "paper";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  --color-base-100: oklch(98.5% 0.012 85); /* cards and panels */
+  --color-base-200: oklch(95.5% 0.022 82); /* page and graph canvas */
+  --color-base-300: oklch(89% 0.03 78); /* borders */
+  --color-base-content: oklch(20% 0.03 55); /* text */
+  --color-primary: oklch(45% 0.11 250); /* claims, "supports" links, main buttons */
+  --color-primary-content: oklch(98% 0.01 85);
+  --color-secondary: oklch(86% 0.07 80); /* evidence */
+  --color-secondary-content: oklch(32% 0.06 65);
+  --color-accent: oklch(48% 0.1 330); /* your notes */
+  --color-accent-content: oklch(98% 0.01 85);
+  --color-neutral: oklch(32% 0.025 55);
+  --color-neutral-content: oklch(96% 0.012 85);
+  --color-info: oklch(52% 0.1 230);
+  --color-info-content: oklch(98% 0.01 85);
+  --color-success: oklch(50% 0.1 150);
+  --color-success-content: oklch(98% 0.01 85);
+  --color-warning: oklch(80% 0.13 75);
+  --color-warning-content: oklch(28% 0.05 60);
+  --color-error: oklch(56% 0.18 35); /* "contradicts" links, errors */
+  --color-error-content: oklch(98% 0.01 85);
+
+  --radius-selector: 1rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  --border: 1px;
+
+  --depth: 1;
+  --noise: 0;
+}
+
+/* Warm charcoal rather than black, with off-white text, to cut glare at night. */
+@plugin "daisyui/theme" {
+  name: "paper-dark";
+  default: false;
+  prefersdark: true;
+  color-scheme: dark;
+
+  --color-base-100: oklch(25% 0.015 60); /* cards and panels */
+  --color-base-200: oklch(21% 0.013 60); /* page and graph canvas */
+  --color-base-300: oklch(33% 0.02 60); /* borders */
+  --color-base-content: oklch(91% 0.02 80); /* text */
+  --color-primary: oklch(74% 0.1 245); /* claims, "supports" links, main buttons */
+  --color-primary-content: oklch(20% 0.03 250);
+  --color-secondary: oklch(45% 0.06 75); /* evidence */
+  --color-secondary-content: oklch(93% 0.03 85);
+  --color-accent: oklch(74% 0.1 330); /* your notes */
+  --color-accent-content: oklch(20% 0.03 330);
+  --color-neutral: oklch(33% 0.02 60);
+  --color-neutral-content: oklch(92% 0.015 80);
+  --color-info: oklch(74% 0.09 230);
+  --color-info-content: oklch(20% 0.03 230);
+  --color-success: oklch(72% 0.11 150);
+  --color-success-content: oklch(20% 0.03 150);
+  --color-warning: oklch(82% 0.12 75);
+  --color-warning-content: oklch(22% 0.04 60);
+  --color-error: oklch(70% 0.16 35); /* "contradicts" links, errors */
+  --color-error-content: oklch(20% 0.04 35);
+
+  --radius-selector: 1rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  --border: 1px;
+
+  --depth: 1;
+  --noise: 0;
+}
+
+/* Serif for reading text (quotes, node text); the UI keeps the system sans. */
+@theme {
+  --font-reading: "Literata", Georgia, "Times New Roman", serif;
+}

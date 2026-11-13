@@ -1,4 +1,5 @@
-import AppNavbar from '../components/AppNavbar'
+// Shown when reading the PDF or building the graph fails, with "Try again" and "Choose another PDF".
+import AppNavbar from '@/app/AppNavbar'
 
 type ErrorPageProps = {
   message: string

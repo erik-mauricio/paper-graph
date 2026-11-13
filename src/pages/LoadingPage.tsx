@@ -1,4 +1,5 @@
-import AppNavbar from '../components/AppNavbar'
+// Progress while a paper is processed: reading, extracting, checking.
+import AppNavbar from '@/app/AppNavbar'
 
 export type LoadingStage = 'reading' | 'extracting' | 'checking'
 
