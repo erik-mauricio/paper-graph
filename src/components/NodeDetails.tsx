@@ -24,7 +24,7 @@ function NodeDetails({ node, relation, onShowInPdf }: NodeDetailsProps) {
           )}
           {node.type === 'claim' && <span className="badge badge-sm badge-outline">claim</span>}
           {node.type === 'note' && <span className="badge badge-sm badge-accent badge-soft">note</span>}
-          <p className="min-w-48 flex-1 font-medium">{node.text}</p>
+          <p className="min-w-48 flex-1 font-reading font-medium leading-relaxed">{node.text}</p>
         </div>
 
         {node.source && <Quote text={node.source.quote} />}

@@ -321,7 +321,7 @@ function GraphCanvas({
                 const type = node.data.node.type
                 if (type === 'claim') return 'var(--color-primary)'
                 if (type === 'note') return 'var(--color-accent)'
-                return 'var(--color-base-300)'
+                return 'var(--color-secondary)'
               }}
             />
           )}

@@ -74,7 +74,7 @@ function NodePanel({
           </button>
         </div>
 
-        <h2 className="card-title text-base leading-snug">{node.text}</h2>
+        <h2 className="card-title font-reading text-base leading-snug font-semibold">{node.text}</h2>
         {node.source && <Quote text={node.source.quote} />}
         <SourceMeta node={node} />
 

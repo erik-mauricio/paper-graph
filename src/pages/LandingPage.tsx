@@ -13,7 +13,7 @@ function LandingPage({ onUpload }: LandingPageProps) {
       <main className="hero flex-1">
         <div className="hero-content w-full max-w-5xl flex-col gap-10 py-12 lg:flex-row lg:gap-16">
           <div className="flex max-w-xl flex-col gap-6 text-center lg:text-left">
-            <h1 className="text-4xl font-bold text-balance sm:text-5xl">
+            <h1 className="font-reading text-4xl font-semibold text-balance sm:text-5xl">
               See how a paper’s argument fits together
             </h1>
             <p className="text-lg text-base-content/70">

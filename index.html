@@ -5,10 +5,19 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>paper-graph</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400..600;1,7..72,400&display=swap"
+    />
     <script>
+      // Apply the saved theme before first paint. Old 'sage' names map to the new themes.
       try {
-        const t = localStorage.getItem('theme')
-        if (t === 'sage' || t === 'sage-dark') document.documentElement.setAttribute('data-theme', t)
+        const old = { sage: 'paper', 'sage-dark': 'paper-dark' }
+        const saved = localStorage.getItem('theme')
+        const t = old[saved] || saved
+        if (t === 'paper' || t === 'paper-dark') document.documentElement.setAttribute('data-theme', t)
       } catch (e) {}
     </script>
   </head>
