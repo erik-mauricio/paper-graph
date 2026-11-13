@@ -1,35 +1,35 @@
 import type { Link } from '../lib/graph'
 import type { GraphNode } from '../types/graph'
 import NodeDetails from './NodeDetails'
+import Quote from './Quote'
+import SourceMeta from './SourceMeta'
 
 type ClaimItemProps = {
   claim: GraphNode
   links: Link[]
+  onShowInPdf?: (node: GraphNode) => void
 }
 
-
-function ClaimItem({ claim, links }: ClaimItemProps) {
+function ClaimItem({ claim, links, onShowInPdf }: ClaimItemProps) {
   return (
     <details className="collapse collapse-arrow border border-base-300 bg-base-100">
       <summary className="collapse-title">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <span className="badge badge-primary">Claim</span>
+          <span className="badge badge-primary badge-sm">Claim</span>
           <span className="flex-1 font-semibold">{claim.text}</span>
-          <span className="text-sm text-base-content/60">
+          <span className="badge badge-ghost badge-sm shrink-0">
             {links.length} linked
           </span>
         </div>
       </summary>
 
       <div className="collapse-content flex flex-col gap-3">
-        <p className="text-sm text-base-content/60">
-          Page {claim.source.page}: “{claim.source.quote}”
-          {claim.source.verified === false && (
-            <span className="badge badge-sm badge-warning ml-2">
-              unverified quote
-            </span>
-          )}
-        </p>
+        <Quote text={claim.source.quote} />
+        <SourceMeta node={claim} onShowInPdf={onShowInPdf} />
+
+        <div className="divider my-0 text-xs text-base-content/60">
+          Evidence ({links.length})
+        </div>
 
         {links.length === 0 && (
           <p className="text-sm text-base-content/60">
@@ -38,7 +38,12 @@ function ClaimItem({ claim, links }: ClaimItemProps) {
         )}
 
         {links.map(({ edge, node }) => (
-          <NodeDetails key={edge.id} node={node} relation={edge.relation} />
+          <NodeDetails
+            key={edge.id}
+            node={node}
+            relation={edge.relation}
+            onShowInPdf={onShowInPdf}
+          />
         ))}
       </div>
     </details>
