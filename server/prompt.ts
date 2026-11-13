@@ -1,5 +1,8 @@
 import type { PageText } from '../src/types/graph.ts'
 
+// Bump this whenever INSTRUCTIONS change, so cached graphs from the old prompt are not reused.
+export const PROMPT_VERSION = 1
+
 const INSTRUCTIONS = `
 You are analyzing a research paper to map its argument.
 

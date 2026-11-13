@@ -1,4 +1,5 @@
 import express from 'express'
+import { cacheKey, readCache, writeCache } from './cache.ts'
 import { extractGraph } from './gemini.ts'
 
 const PORT = 3001
@@ -31,8 +32,21 @@ app.post('/api/extract', async (req, res) => {
     return
   }
 
+  // Same paper (and prompt version) as before? Serve the saved graph for free.
+  // ?fresh=1 skips the lookup and always calls the model.
+  const key = cacheKey(pages)
+  if (req.query.fresh !== '1') {
+    const cached = await readCache(key)
+    if (cached) {
+      console.log(`[cache] hit ${key.slice(0, 12)} (${cached.model})`)
+      res.json(cached.graph)
+      return
+    }
+  }
+
   try {
-    const graph = await extractGraph(pages)
+    const { graph, model } = await extractGraph(pages)
+    await writeCache(key, { graph, model, createdAt: new Date().toISOString() })
     res.json(graph)
   } catch (error) {
     console.error(error)

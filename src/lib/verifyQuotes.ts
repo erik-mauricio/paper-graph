@@ -1,11 +1,14 @@
 import type { GraphNode, PageText, PaperGraph } from '../types/graph'
 
-// Makes text comparable: lowercase, straight quotes, single spaces.
+// Makes text comparable: lowercase, straight quotes, no hyphens or dashes,
+// single spaces. Hyphens are dropped because a word like "text-based" that wraps
+// at a line end is rejoined as "textbased" when the PDF is read (matches findQuote).
 function normalize(text: string): string {
   return text
     .toLowerCase()
     .replace(/[‘’]/g, "'")
     .replace(/[“”]/g, '"')
+    .replace(/[­‐-―-]/g, '')
     .replace(/\s+/g, ' ')
     .trim()
 }
