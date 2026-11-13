@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { getLinksFrom, getLinksTo, type Link } from '../../lib/graph'
+import { relationLabel } from '../../lib/relations'
 import type { GraphNode, PaperGraph, Relation, Section } from '../../types/graph'
 import Quote from '../Quote'
 import SourceMeta from '../SourceMeta'
@@ -116,15 +117,18 @@ function NodePanel({
           </fieldset>
         )}
 
+        {/* Read from this node: what it's backed by, and what it backs up. */}
         <LinkList
-          title={node.type === 'claim' ? 'Backed by' : 'Linked from'}
-          empty="Nothing points to this item."
+          title="Backed or challenged by"
+          side="claim"
+          empty="Nothing backs this up yet. Drag its + onto evidence to link it."
           links={incoming}
           {...linkProps}
         />
         <LinkList
-          title="Points to"
-          empty="Drag from this node's right edge to another node to link them."
+          title="Backs up or challenges"
+          side="evidence"
+          empty="This doesn't back up or challenge anything."
           links={outgoing}
           {...linkProps}
         />
@@ -135,6 +139,8 @@ function NodePanel({
 
 type LinkListProps = {
   title: string
+  // Which end of the link this node is on, for the badge wording.
+  side: 'claim' | 'evidence'
   empty: string
   links: Link[]
   onSelect: (id: string) => void
@@ -142,7 +148,7 @@ type LinkListProps = {
   onRemoveLink: (edgeId: string) => void
 }
 
-function LinkList({ title, empty, links, onSelect, onSetRelation, onRemoveLink }: LinkListProps) {
+function LinkList({ title, side, empty, links, onSelect, onSetRelation, onRemoveLink }: LinkListProps) {
   return (
     <section className="flex flex-col gap-1">
       <h3 className="text-xs font-semibold tracking-wide text-base-content/60 uppercase">
@@ -164,7 +170,7 @@ function LinkList({ title, empty, links, onSelect, onSetRelation, onRemoveLink }
                     }`}
                     onClick={() => onSetRelation(edge.id, supports ? 'contradicts' : 'supports')}
                   >
-                    {edge.relation}
+                    {relationLabel(edge.relation, side)}
                   </button>
                 </div>
                 <button

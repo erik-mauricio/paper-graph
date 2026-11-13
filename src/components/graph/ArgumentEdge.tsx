@@ -1,9 +1,11 @@
 import { BaseEdge, EdgeLabelRenderer, getBezierPath, type EdgeProps } from '@xyflow/react'
 import { useContext } from 'react'
 import type { ArgumentFlowEdge } from '../../lib/layout'
+import { relationButton, relationLabel } from '../../lib/relations'
 import { GraphActionsContext } from './graphActions'
 
-// A supports/contradicts link. Click it to switch the relation or delete it.
+// A link, drawn claim → evidence ("backed by" / "challenged by").
+// Click it to switch the relation or delete it.
 function ArgumentEdge({
   id,
   sourceX,
@@ -50,7 +52,7 @@ function ArgumentEdge({
                 className={`btn btn-xs join-item ${relation === 'supports' ? 'btn-primary' : ''}`}
                 onClick={() => actions?.onSetRelation(id, 'supports')}
               >
-                Supports
+                {relationButton('supports')}
               </button>
               <button
                 type="button"
@@ -58,7 +60,7 @@ function ArgumentEdge({
                 className={`btn btn-xs join-item ${relation === 'contradicts' ? 'btn-error' : ''}`}
                 onClick={() => actions?.onSetRelation(id, 'contradicts')}
               >
-                Contradicts
+                {relationButton('contradicts')}
               </button>
               <button
                 type="button"
@@ -71,7 +73,9 @@ function ArgumentEdge({
           ) : (
             relation === 'contradicts' && (
               // Only the less common relation gets a label; color + dashes carry it too.
-              <span className="rounded-field bg-base-100 px-1 text-[10px] text-error">contradicts</span>
+              <span className="rounded-field bg-base-100 px-1 text-[10px] text-error">
+                {relationLabel('contradicts', 'claim')}
+              </span>
             )
           )}
         </div>

@@ -95,8 +95,9 @@ function GraphCanvas({
 
   // The "+" menu, open next to a node.
   const [menu, setMenu] = useState<{ nodeId: string; at: Point } | null>(null)
-  // A link waiting for the user to pick supports/contradicts.
-  const [picker, setPicker] = useState<{ from: string; to: string; at: Point } | null>(null)
+  // A link waiting for the user to pick "backed by" / "challenged by".
+  // `backed` is the claim side, `backer` the evidence side.
+  const [picker, setPicker] = useState<{ backed: string; backer: string; at: Point } | null>(null)
   // "Link to an existing node" mode: the node the link starts from.
   const [linkSource, setLinkSource] = useState<string | null>(null)
   // Whether a link is being dragged right now (for the hint banner).
@@ -260,6 +261,16 @@ function GraphCanvas({
     [graph],
   )
 
+  // Drawing from A to B means "A is backed by B". But if A is evidence (or a
+  // note) and B is a claim, the user almost certainly means the claim is the
+  // one being backed up, so start with that. The picker can swap it.
+  function orient(a: string, b: string) {
+    const typeOf = (id: string) => graph.nodes.find((n) => n.id === id)?.type
+    return typeOf(a) !== 'claim' && typeOf(b) === 'claim'
+      ? { backed: b, backer: a }
+      : { backed: a, backer: b }
+  }
+
   function selectNode(id: string) {
     setSelectedId(id)
     setSelectedEdgeId(null)
@@ -300,9 +311,10 @@ function GraphCanvas({
 
   // onConnect runs just before onConnectEnd; remember the link so onConnectEnd
   // can open the relation picker where the pointer let go.
-  const pendingLink = useRef<{ from: string; to: string } | null>(null)
+  const pendingLink = useRef<{ backed: string; backer: string } | null>(null)
   function onConnect(c: Connection) {
-    pendingLink.current = { from: c.source, to: c.target }
+    // Dragged from the source's "+" onto the target: source is backed by target.
+    pendingLink.current = orient(c.source, c.target)
   }
 
   const onConnectEnd: OnConnectEnd = (event, state) => {
@@ -316,14 +328,18 @@ function GraphCanvas({
       return
     }
 
-    // Let go over empty space: make a new node there, already linked.
+    // Let go over empty space: make a new node there, already linked. From a
+    // claim, the new node is evidence backing it up; from evidence or a note,
+    // the new node is the claim it backs up.
     const fromId = state.fromNode?.id
     if (fromId && !state.toNode) {
       const drop = screenToFlowPosition(client)
+      const fromClaim = graph.nodes.find((n) => n.id === fromId)?.type === 'claim'
       onAddNode({
+        type: fromClaim ? 'evidence' : 'claim',
         position: { x: drop.x - NODE_WIDTH / 2, y: drop.y - NODE_HEIGHT / 2 },
         sectionId: sectionAt(drop)?.id ?? null,
-        link: { otherId: fromId, direction: 'out', relation: 'supports' },
+        link: { otherId: fromId, direction: fromClaim ? 'in' : 'out', relation: 'supports' },
       })
     }
   }
@@ -338,14 +354,15 @@ function GraphCanvas({
     }
     const pos = absolutePosition(nodeId) ?? { x: 0, y: 0 }
     const sectionId = positions[nodeId]?.sectionId ?? null
-    const toLeft = action !== 'claim-out'
+    // Claim-first layout: evidence goes to the right, the claim it backs up to the left.
+    const isClaim = action === 'claim-out'
     onAddNode({
-      type: action === 'claim-out' ? 'claim' : 'evidence',
-      position: freeSpot({ x: toLeft ? pos.x - NODE_WIDTH - SIDE_GAP : pos.x + NODE_WIDTH + SIDE_GAP, y: pos.y }),
+      type: isClaim ? 'claim' : 'evidence',
+      position: freeSpot({ x: isClaim ? pos.x - NODE_WIDTH - SIDE_GAP : pos.x + NODE_WIDTH + SIDE_GAP, y: pos.y }),
       sectionId,
       link: {
         otherId: nodeId,
-        direction: toLeft ? 'in' : 'out',
+        direction: isClaim ? 'out' : 'in',
         relation: action === 'contradict-in' ? 'contradicts' : 'supports',
       },
     })
@@ -357,7 +374,7 @@ function GraphCanvas({
     // In link mode, clicking a node finishes the link.
     if (linkSource) {
       if (node.type === 'argument' && canLink(linkSource, node.id)) {
-        setPicker({ from: linkSource, to: node.id, at: toLocal({ x: event.clientX, y: event.clientY }) })
+        setPicker({ ...orient(linkSource, node.id), at: toLocal({ x: event.clientX, y: event.clientY }) })
         setLinkSource(null)
       }
       return
@@ -512,8 +529,8 @@ function GraphCanvas({
                 {linkSource ? (
                   <>
                     <span>
-                      Click the node that <strong>“{truncate(textOf(linkSource))}”</strong> supports or
-                      contradicts
+                      Click the node that backs up or challenges{' '}
+                      <strong>“{truncate(textOf(linkSource))}”</strong>
                     </span>
                     <button type="button" className="btn btn-ghost btn-xs" onClick={() => setLinkSource(null)}>
                       Cancel <kbd className="kbd kbd-xs">Esc</kbd>
@@ -571,9 +588,11 @@ function GraphCanvas({
         <RelationPicker
           x={picker.at.x}
           y={picker.at.y}
-          fromText={textOf(picker.from)}
-          toText={textOf(picker.to)}
-          onPick={(relation) => editor.addEdge(picker.from, picker.to, relation)}
+          backedText={textOf(picker.backed)}
+          backerText={textOf(picker.backer)}
+          onSwap={() => setPicker({ ...picker, backed: picker.backer, backer: picker.backed })}
+          // Stored supporter → supported.
+          onPick={(relation) => editor.addEdge(picker.backer, picker.backed, relation)}
           onClose={() => setPicker(null)}
         />
       )}
@@ -585,20 +604,23 @@ function truncate(text: string, max = 48): string {
   return text.length > max ? `${text.slice(0, max - 1)}…` : text
 }
 
+// Arrows run claim → evidence: "this claim is backed by / challenged by that".
 function Legend() {
   return (
     <div className="flex gap-3 rounded-field border border-base-300 bg-base-100/90 px-2.5 py-1.5 text-xs">
       <span className="flex items-center gap-1.5">
-        <svg width="20" height="6" aria-hidden="true">
-          <line x1="0" y1="3" x2="20" y2="3" stroke="var(--color-primary)" strokeWidth="2" />
+        <svg width="24" height="8" aria-hidden="true">
+          <line x1="0" y1="4" x2="19" y2="4" stroke="var(--color-primary)" strokeWidth="2" />
+          <path d="M18 0.5 L24 4 L18 7.5 Z" fill="var(--color-primary)" />
         </svg>
-        supports
+        backed by
       </span>
       <span className="flex items-center gap-1.5">
-        <svg width="20" height="6" aria-hidden="true">
-          <line x1="0" y1="3" x2="20" y2="3" stroke="var(--color-error)" strokeWidth="2" strokeDasharray="5 3" />
+        <svg width="24" height="8" aria-hidden="true">
+          <line x1="0" y1="4" x2="19" y2="4" stroke="var(--color-error)" strokeWidth="2" strokeDasharray="4 3" />
+          <path d="M18 0.5 L24 4 L18 7.5 Z" fill="var(--color-error)" />
         </svg>
-        contradicts
+        challenged by
       </span>
     </div>
   )

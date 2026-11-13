@@ -17,8 +17,8 @@ export type FlowNode = ArgumentFlowNode | SectionFlowNode
 export type NodePosition = { x: number; y: number; sectionId: string | null }
 export type Positions = Record<string, NodePosition>
 
-// Lays nodes out left to right with dagre: evidence on the left, the claims it
-// supports to the right. Returns top-left corners, none of them in a section.
+// Lays nodes out left to right with dagre, claim-first: claims on the left and
+// what backs them up to the right. Returns top-left corners, none in a section.
 export function initialPositions(graph: PaperGraph): Positions {
   const g = new Graph()
   g.setGraph({ rankdir: 'LR', nodesep: 24, ranksep: 90, marginx: 20, marginy: 20 })
@@ -28,7 +28,9 @@ export function initialPositions(graph: PaperGraph): Positions {
     g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT })
   }
   for (const edge of graph.edges) {
-    g.setEdge(edge.from, edge.to)
+    // Links are stored supporter → supported; laying them out the other way
+    // round puts the supported claim first.
+    g.setEdge(edge.to, edge.from)
   }
 
   layout(g)
@@ -38,6 +40,20 @@ export function initialPositions(graph: PaperGraph): Positions {
     const { x, y } = g.node(node.id)
     // dagre gives the center; React Flow wants the top-left corner.
     positions[node.id] = { x: x - NODE_WIDTH / 2, y: y - NODE_HEIGHT / 2, sectionId: null }
+  }
+
+  // dagre puts unlinked nodes in the first column, which is the claims column.
+  // Move unlinked evidence and notes to the evidence column, below everything.
+  const linked = new Set(graph.edges.flatMap((e) => [e.from, e.to]))
+  const loose = graph.nodes.filter((n) => n.type !== 'claim' && !linked.has(n.id))
+  const backers = graph.edges.map((e) => positions[e.from]).filter(Boolean)
+  if (loose.length && backers.length) {
+    const column = Math.min(...backers.map((p) => p.x))
+    let y = Math.max(...Object.values(positions).map((p) => p.y)) + NODE_HEIGHT + 48
+    for (const n of loose) {
+      positions[n.id] = { x: column, y, sectionId: null }
+      y += NODE_HEIGHT + 24
+    }
   }
   return positions
 }
@@ -86,8 +102,9 @@ export function toFlowEdge(edge: GraphEdge): ArgumentFlowEdge {
   return {
     id: edge.id,
     type: 'argument',
-    source: edge.from,
-    target: edge.to,
+    // Drawn claim → evidence ("backed by"), the reverse of how links are stored.
+    source: edge.to,
+    target: edge.from,
     data: { relation: edge.relation },
     className: contradicts ? 'edge-contradicts' : 'edge-supports',
     style: {
