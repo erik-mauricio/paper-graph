@@ -1,0 +1,93 @@
+/* Styles for the graph canvas (React Flow): theme colors, node selection,
+   the "+" link handle, the whole-card drop target, and link labels.
+   Components: src/features/graph/canvas/. */
+
+/* Make React Flow follow the daisyUI theme in light and dark mode. */
+.react-flow {
+  --xy-background-color: var(--color-base-200);
+  --xy-background-pattern-color: color-mix(in oklch, var(--color-base-content) 10%, transparent);
+  --xy-edge-label-background-color: var(--color-base-100);
+  --xy-edge-label-color: var(--color-base-content);
+  --xy-minimap-background-color: var(--color-base-100);
+  --xy-minimap-mask-background-color: color-mix(in oklch, var(--color-base-200) 70%, transparent);
+  --xy-controls-button-background-color: var(--color-base-100);
+  --xy-controls-button-background-color-hover: var(--color-base-200);
+  --xy-controls-button-color: var(--color-base-content);
+  --xy-controls-button-color-hover: var(--color-base-content);
+  --xy-controls-button-border-color: var(--color-base-300);
+  --xy-handle-background-color: var(--color-base-content);
+  --xy-handle-border-color: var(--color-base-100);
+}
+
+.react-flow__node,
+.react-flow__edge path {
+  transition: opacity 150ms ease;
+}
+
+/* Our nodes draw their own card; drop React Flow's default selection outline. */
+.react-flow__node-argument.selected,
+.react-flow__node-argument:focus-visible {
+  outline: none;
+}
+
+/* Link labels and the link options chip sit above the nodes, so a chip near a
+   card isn't covered by it. */
+.react-flow__edgelabel-renderer {
+  z-index: 1001;
+}
+
+/* The "+" on a node's right edge: drag it to another node to link them, or
+   click it for options. Faint until you hover the node, so the graph stays calm. */
+.react-flow__handle.graph-plus {
+  width: 22px;
+  height: 22px;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--color-base-100);
+  border-radius: 9999px;
+  background: var(--color-primary);
+  color: var(--color-primary-content);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: crosshair;
+  opacity: 0;
+  transition: opacity 120ms ease, box-shadow 120ms ease;
+}
+.react-flow__node:hover .graph-plus,
+.react-flow__node.selected .graph-plus,
+.react-flow__handle.graph-plus.connectingfrom,
+.react-flow__handle.graph-plus:focus-visible {
+  opacity: 1;
+}
+.react-flow__handle.graph-plus:hover {
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--color-primary) 25%, transparent);
+}
+/* The glyph shouldn't swallow the pointer, or React Flow won't see the handle. */
+.react-flow__handle.graph-plus > span {
+  pointer-events: none;
+}
+@media (hover: none) {
+  .react-flow__handle.graph-plus {
+    opacity: 1;
+  }
+}
+
+/* An invisible handle covering the whole card, so a link can be dropped
+   anywhere on a node instead of on a tiny dot. */
+.react-flow__handle.graph-drop-target {
+  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  transform: none;
+  border: 0;
+  border-radius: var(--radius-box);
+  background: transparent;
+  opacity: 0;
+}

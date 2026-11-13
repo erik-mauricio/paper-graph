@@ -1,3 +1,4 @@
+// A passage quoted from the paper, styled for reading. Shared by the graph panel and List view.
 type QuoteProps = {
   text: string
 }

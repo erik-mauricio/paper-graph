@@ -1,4 +1,6 @@
-import type { PaperGraph } from '../types/graph'
+// A made-up paper's graph for developing without the API (open /?sample).
+// Also used by unit and e2e tests.
+import type { PaperGraph } from '@shared/graph'
 
 // sample data for building the UI before extraction exists.
 // The paper is dummy data. It covers every case the view must handle:

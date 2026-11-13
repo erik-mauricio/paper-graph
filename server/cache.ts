@@ -1,8 +1,10 @@
+// Saves finished graphs in server/.cache/, one JSON file per paper, keyed by a
+// hash of the page text and PROMPT_VERSION. Used by index.ts.
 import { createHash } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import type { PageText, PaperGraph } from '../src/types/graph.ts'
-import { PROMPT_VERSION } from './prompt.ts'
+import type { PageText, PaperGraph } from '../shared/graph.ts'
+import { PROMPT_VERSION } from './extraction/prompt.ts'
 
 // Finished graphs are saved here, one JSON file per paper, so the same paper
 // never costs a second API call.

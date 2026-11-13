@@ -25,3 +25,7 @@ dist-ssr
 .env
 # Saved extraction results (server/cache.ts)
 server/.cache/
+
+# Playwright
+/test-results/
+/playwright-report/

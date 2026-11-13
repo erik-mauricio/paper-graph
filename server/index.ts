@@ -1,6 +1,8 @@
+// The API server (Express, port 3001). One route: POST /api/extract turns a paper's
+// page text into a claims-and-evidence graph, served from the cache when possible.
 import express from 'express'
 import { cacheKey, readCache, writeCache } from './cache.ts'
-import { extractGraph } from './gemini.ts'
+import { extractGraph } from './extraction/gemini.ts'
 
 const PORT = 3001
 
