@@ -8,6 +8,11 @@ import LoadingPage from './pages/LoadingPage'
 import ResultsPage from './pages/ResultsPage'
 import ThemeToggle from './components/ThemeToggle'
 import type { PaperGraph } from './types/graph'
+import { sampleGraph } from './data/sampleGraph'
+
+// Dev shortcut: open /?sample to view the sample graph without uploading a paper.
+const useSample =
+  import.meta.env.DEV && new URLSearchParams(window.location.search).has('sample')
 
 function App() {
   return (
@@ -26,6 +31,16 @@ function CurrentPage() {
   const [file, setFile] = useState<File | null>(null)
   const [graph, setGraph] = useState<PaperGraph | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  if (useSample && !file) {
+    return (
+      <ResultsPage
+        graph={sampleGraph}
+        fileName="sample.pdf"
+        onReset={() => (window.location.search = '')}
+      />
+    )
+  }
 
   async function handleUpload(newFile: File) {
     setFile(newFile)
