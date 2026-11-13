@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { nextNonce } from '../../lib/pdf'
 import { annotationKey, useAnnotations } from '../../lib/useAnnotations'
-import type { AnnotationDraft, FocusRequest } from '../../types/annotations'
+import type { Annotation, AnnotationDraft, FocusRequest } from '../../types/annotations'
 import AnnotationsPanel from './AnnotationsPanel'
 import PdfViewer from './PdfViewer'
 import type { HighlightOptions } from './SelectionToolbar'
@@ -10,10 +10,12 @@ type PdfPanelProps = {
   file: File
   // Jump requests from the graph or list (e.g. "Show in PDF").
   quoteFocus: FocusRequest | null
+  // Turns a highlight into a graph node.
+  onAddToGraph?: (annotation: Annotation) => void
 }
 
 // The PDF viewer plus its annotations sidebar.
-function PdfPanel({ file, quoteFocus }: PdfPanelProps) {
+function PdfPanel({ file, quoteFocus, onAddToGraph }: PdfPanelProps) {
   const store = useAnnotations(annotationKey(file))
   const [activeId, setActiveId] = useState<string | null>(null)
   const [focusNote, setFocusNote] = useState(false)
@@ -98,6 +100,7 @@ function PdfPanel({ file, quoteFocus }: PdfPanelProps) {
             focusNote={focusNote}
             onActivate={jumpToAnnotation}
             onClose={() => setShowAnnotations(false)}
+            onAddToGraph={onAddToGraph}
           />
         </div>
       )}

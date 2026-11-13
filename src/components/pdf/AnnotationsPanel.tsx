@@ -10,6 +10,8 @@ type AnnotationsPanelProps = {
   focusNote: boolean
   onActivate: (id: string) => void
   onClose: () => void
+  // Turns a highlight into a graph node.
+  onAddToGraph?: (annotation: Annotation) => void
 }
 
 function AnnotationsPanel({
@@ -18,6 +20,7 @@ function AnnotationsPanel({
   focusNote,
   onActivate,
   onClose,
+  onAddToGraph,
 }: AnnotationsPanelProps) {
   const { annotations, groups } = store
   const [checked, setChecked] = useState<Set<string>>(new Set())
@@ -65,6 +68,7 @@ function AnnotationsPanel({
     checked,
     onToggle: toggle,
     onActivate,
+    onAddToGraph,
   }
 
   return (
@@ -166,6 +170,7 @@ type RowSharedProps = {
   checked: Set<string>
   onToggle: (id: string) => void
   onActivate: (id: string) => void
+  onAddToGraph?: (annotation: Annotation) => void
 }
 
 type GroupSectionProps = {
@@ -226,6 +231,7 @@ function AnnotationRow({
   checked,
   onToggle,
   onActivate,
+  onAddToGraph,
 }: RowSharedProps & { annotation: Annotation }) {
   const active = a.id === activeId
   const itemRef = useRef<HTMLLIElement>(null)
@@ -310,9 +316,18 @@ function AnnotationRow({
                 ))}
                 <option value="new">+ New group</option>
               </select>
+              {onAddToGraph && (
+                <button
+                  type="button"
+                  className="btn btn-soft btn-primary btn-xs ml-auto"
+                  onClick={() => onAddToGraph(a)}
+                >
+                  Add to graph
+                </button>
+              )}
               <button
                 type="button"
-                className="btn btn-ghost btn-xs ml-auto text-error"
+                className={`btn btn-ghost btn-xs text-error ${onAddToGraph ? '' : 'ml-auto'}`}
                 onClick={() => store.removeAnnotation(a.id)}
               >
                 Delete

@@ -23,10 +23,11 @@ function NodeDetails({ node, relation, onShowInPdf }: NodeDetailsProps) {
             </span>
           )}
           {node.type === 'claim' && <span className="badge badge-sm badge-outline">claim</span>}
+          {node.type === 'note' && <span className="badge badge-sm badge-accent badge-soft">note</span>}
           <p className="min-w-48 flex-1 font-medium">{node.text}</p>
         </div>
 
-        <Quote text={node.source.quote} />
+        {node.source && <Quote text={node.source.quote} />}
         <SourceMeta node={node} onShowInPdf={onShowInPdf} />
       </div>
     </div>

@@ -24,7 +24,7 @@ function ClaimItem({ claim, links, onShowInPdf }: ClaimItemProps) {
       </summary>
 
       <div className="collapse-content flex flex-col gap-3">
-        <Quote text={claim.source.quote} />
+        {claim.source && <Quote text={claim.source.quote} />}
         <SourceMeta node={claim} onShowInPdf={onShowInPdf} />
 
         <div className="divider my-0 text-xs text-base-content/60">

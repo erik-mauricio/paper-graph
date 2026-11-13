@@ -1,19 +1,25 @@
 import { Graph, layout } from '@dagrejs/dagre'
 import { MarkerType, type Edge, type Node } from '@xyflow/react'
-import type { GraphNode, PaperGraph } from '../types/graph'
+import type { GraphEdge, GraphNode, PaperGraph, Relation, Section } from '../types/graph'
 
 export const NODE_WIDTH = 260
 export const NODE_HEIGHT = 112
 
-export type ArgumentNodeData = { node: GraphNode }
+export type ArgumentNodeData = { node: GraphNode; sectionName?: string }
 export type ArgumentFlowNode = Node<ArgumentNodeData, 'argument'>
 
-// Converts a paper graph into positioned React Flow nodes and edges.
-// Layout is left-to-right: evidence on the left, the claims it supports to the right.
-export function toFlow(graph: PaperGraph): {
-  nodes: ArgumentFlowNode[]
-  edges: Edge[]
-} {
+export type SectionNodeData = { section: Section }
+export type SectionFlowNode = Node<SectionNodeData, 'section'>
+
+export type FlowNode = ArgumentFlowNode | SectionFlowNode
+
+// Where a node sits. Inside a section, x and y are relative to the section's corner.
+export type NodePosition = { x: number; y: number; sectionId: string | null }
+export type Positions = Record<string, NodePosition>
+
+// Lays nodes out left to right with dagre: evidence on the left, the claims it
+// supports to the right. Returns top-left corners, none of them in a section.
+export function initialPositions(graph: PaperGraph): Positions {
   const g = new Graph()
   g.setGraph({ rankdir: 'LR', nodesep: 24, ranksep: 90, marginx: 20, marginy: 20 })
   g.setDefaultEdgeLabel(() => ({}))
@@ -27,35 +33,68 @@ export function toFlow(graph: PaperGraph): {
 
   layout(g)
 
-  const nodes: ArgumentFlowNode[] = graph.nodes.map((node) => {
+  const positions: Positions = {}
+  for (const node of graph.nodes) {
     const { x, y } = g.node(node.id)
+    // dagre gives the center; React Flow wants the top-left corner.
+    positions[node.id] = { x: x - NODE_WIDTH / 2, y: y - NODE_HEIGHT / 2, sectionId: null }
+  }
+  return positions
+}
+
+// Builds React Flow nodes. Sections come first because React Flow needs a
+// parent before its children.
+export function toFlowNodes(
+  graph: PaperGraph,
+  positions: Positions,
+  sections: Section[],
+): FlowNode[] {
+  const sectionIds = new Set(sections.map((s) => s.id))
+
+  const sectionNodes: SectionFlowNode[] = sections.map((section) => ({
+    id: section.id,
+    type: 'section',
+    position: { x: section.x, y: section.y },
+    width: section.width,
+    height: section.height,
+    data: { section },
+    // Always behind the nodes, including ones that aren't in this section.
+    zIndex: -1,
+  }))
+
+  const argumentNodes: ArgumentFlowNode[] = graph.nodes.map((node) => {
+    const pos = positions[node.id] ?? { x: 0, y: 0, sectionId: null }
+    const parentId = pos.sectionId && sectionIds.has(pos.sectionId) ? pos.sectionId : undefined
     return {
       id: node.id,
       type: 'argument',
-      // dagre gives the center; React Flow wants the top-left corner.
-      position: { x: x - NODE_WIDTH / 2, y: y - NODE_HEIGHT / 2 },
+      position: { x: pos.x, y: pos.y },
+      parentId,
       data: { node },
     }
   })
 
-  const edges: Edge[] = graph.edges.map((edge) => {
-    const contradicts = edge.relation === 'contradicts'
-    const color = contradicts ? 'var(--color-error)' : 'var(--color-primary)'
-    return {
-      id: edge.id,
-      source: edge.from,
-      target: edge.to,
-      // Only label the less common relation; color + dashes carry it too.
-      label: contradicts ? 'contradicts' : undefined,
-      className: contradicts ? 'edge-contradicts' : 'edge-supports',
-      style: {
-        stroke: color,
-        strokeWidth: 2,
-        strokeDasharray: contradicts ? '6 4' : undefined,
-      },
-      markerEnd: { type: MarkerType.ArrowClosed, color },
-    }
-  })
+  return [...sectionNodes, ...argumentNodes]
+}
 
-  return { nodes, edges }
+export type ArgumentEdgeData = { relation: Relation }
+export type ArgumentFlowEdge = Edge<ArgumentEdgeData, 'argument'>
+
+export function toFlowEdge(edge: GraphEdge): ArgumentFlowEdge {
+  const contradicts = edge.relation === 'contradicts'
+  const color = contradicts ? 'var(--color-error)' : 'var(--color-primary)'
+  return {
+    id: edge.id,
+    type: 'argument',
+    source: edge.from,
+    target: edge.to,
+    data: { relation: edge.relation },
+    className: contradicts ? 'edge-contradicts' : 'edge-supports',
+    style: {
+      stroke: color,
+      strokeWidth: 2,
+      strokeDasharray: contradicts ? '6 4' : undefined,
+    },
+    markerEnd: { type: MarkerType.ArrowClosed, color },
+  }
 }
