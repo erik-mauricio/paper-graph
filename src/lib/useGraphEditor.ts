@@ -11,7 +11,9 @@ type EditorState = {
   edited: boolean
 }
 
-type Stored = EditorState & { version: 1 }
+// Version 2: the graph is laid out claim-first. Version 1 saves were laid out
+// evidence-first and get mirrored left-to-right when loaded.
+type Stored = EditorState & { version: 2 }
 
 // The last delete, kept so it can be undone. Any other change clears it.
 type Undo = { message: string; before: EditorState; at: number }
@@ -36,20 +38,41 @@ function load(key: string, aiGraph: PaperGraph): EditorState {
   try {
     const raw = localStorage.getItem(key)
     if (raw) {
-      const parsed = JSON.parse(raw) as Partial<Stored>
-      if (parsed.version === 1 && parsed.graph && parsed.positions && Array.isArray(parsed.sections)) {
-        return {
+      const parsed = JSON.parse(raw) as Partial<Omit<Stored, 'version'>> & { version?: number }
+      if (
+        (parsed.version === 1 || parsed.version === 2) &&
+        parsed.graph &&
+        parsed.positions &&
+        Array.isArray(parsed.sections)
+      ) {
+        const saved: EditorState = {
           graph: parsed.graph,
           positions: parsed.positions,
           sections: parsed.sections,
           edited: Boolean(parsed.edited),
         }
+        return parsed.version === 1 ? mirror(saved) : saved
       }
     }
   } catch {
     // Storage blocked or bad data: start from the AI graph.
   }
   return fromAi(aiGraph)
+}
+
+// Flips a layout left-to-right, keeping the user's arrangement and sections.
+// Used for saves from before the graph was laid out claim-first.
+function mirror(s: EditorState): EditorState {
+  const sections = s.sections.map((sec) => ({ ...sec, x: -(sec.x + sec.width) }))
+  const positions: Positions = {}
+  for (const [id, p] of Object.entries(s.positions)) {
+    const section = s.sections.find((sec) => sec.id === p.sectionId)
+    positions[id] = {
+      ...p,
+      x: section ? section.width - (p.x + NODE_WIDTH) : -(p.x + NODE_WIDTH),
+    }
+  }
+  return { ...s, positions, sections }
 }
 
 // Top-left corner of a node on the canvas, whether or not it's in a section.
@@ -69,7 +92,7 @@ export function useGraphEditor(key: string, aiGraph: PaperGraph) {
   useEffect(() => {
     try {
       if (state.edited) {
-        const stored: Stored = { version: 1, ...state }
+        const stored: Stored = { version: 2, ...state }
         localStorage.setItem(key, JSON.stringify(stored))
       } else {
         localStorage.removeItem(key)

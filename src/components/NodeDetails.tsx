@@ -1,3 +1,4 @@
+import { relationToClaim } from '../lib/relations'
 import type { GraphNode, Relation } from '../types/graph'
 import Quote from './Quote'
 import SourceMeta from './SourceMeta'
@@ -19,7 +20,7 @@ function NodeDetails({ node, relation, onShowInPdf }: NodeDetailsProps) {
                 relation === 'supports' ? 'badge-primary' : 'badge-error'
               }`}
             >
-              {relation}
+              {relationToClaim(relation)}
             </span>
           )}
           {node.type === 'claim' && <span className="badge badge-sm badge-outline">claim</span>}

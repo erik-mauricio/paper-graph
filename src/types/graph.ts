@@ -24,7 +24,8 @@ export type GraphNode = {
   edited?: boolean
 }
 
-// Edges point from the supporting item to the thing it supports,
+// Edges are stored from the supporting item to the thing it supports
+// (the graph draws them the other way: claim → backed by → evidence),
 // e.g. evidence -> claim or claim -> claim.
 export type GraphEdge = {
   id: string

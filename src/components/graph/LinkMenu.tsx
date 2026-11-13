@@ -11,9 +11,9 @@ type LinkMenuProps = {
 }
 
 const ITEMS: { action: LinkMenuAction; label: string; hint: string }[] = [
-  { action: 'support-in', label: 'Add evidence that supports this', hint: 'New node → this' },
-  { action: 'contradict-in', label: 'Add counter-evidence', hint: 'New node contradicts this' },
-  { action: 'claim-out', label: 'Add a claim this supports', hint: 'This → new node' },
+  { action: 'support-in', label: 'Add evidence for this', hint: 'This is backed by a new node' },
+  { action: 'contradict-in', label: 'Add counter-evidence', hint: 'This is challenged by a new node' },
+  { action: 'claim-out', label: 'Add the claim this backs up', hint: 'A new claim, backed by this' },
   { action: 'link-existing', label: 'Link to an existing node…', hint: 'Then click the other node' },
 ]
 

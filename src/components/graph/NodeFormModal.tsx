@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import type { NodeType, Relation, Section, Source } from '../../types/graph'
+import { relationButton } from '../../lib/relations'
 import Quote from '../Quote'
 import { useDialog } from './useDialog'
 
@@ -93,7 +94,8 @@ function NodeFormModal({
           <fieldset className="fieldset">
             <legend className="fieldset-legend">Link</legend>
             <div className="flex flex-col gap-2 rounded-field border border-base-300 p-2 text-sm">
-              <p>{link.direction === 'in' ? 'This new node…' : <q className="line-clamp-2">{link.otherText}</q>}</p>
+              {/* Reads "claim — backed by — evidence". 'in': the new node backs up the other one. */}
+              <p>{link.direction === 'in' ? <q className="line-clamp-2">{link.otherText}</q> : 'This new node…'}</p>
               <div className="join" role="radiogroup" aria-label="Relation">
                 {(['supports', 'contradicts'] as const).map((r) => (
                   <input
@@ -101,13 +103,13 @@ function NodeFormModal({
                     type="radio"
                     name="node-relation"
                     className={`btn btn-sm join-item ${r === 'contradicts' && value.relation === r ? 'btn-error' : ''}`}
-                    aria-label={r === 'supports' ? 'Supports' : 'Contradicts'}
+                    aria-label={relationButton(r)}
                     checked={value.relation === r}
                     onChange={() => setValue((v) => ({ ...v, relation: r }))}
                   />
                 ))}
               </div>
-              <p>{link.direction === 'in' ? <q className="line-clamp-2">{link.otherText}</q> : '…this new node.'}</p>
+              <p>{link.direction === 'in' ? '…this new node.' : <q className="line-clamp-2">{link.otherText}</q>}</p>
             </div>
           </fieldset>
         )}

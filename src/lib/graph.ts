@@ -38,7 +38,7 @@ export function getUnlinkedEvidence(graph: PaperGraph): GraphNode[] {
   )
 }
 
-// Gets all the links that start at the given node (the claims it supports or contradicts).
+// Gets all the links that start at the given node: what it backs up or challenges.
 export function getLinksFrom(graph: PaperGraph, nodeId: string): Link[] {
   const links: Link[] = []
 
