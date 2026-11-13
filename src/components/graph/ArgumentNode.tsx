@@ -21,7 +21,7 @@ function ArgumentNode({ data, selected }: NodeProps<ArgumentFlowNode>) {
         >
           {isClaim ? 'Claim' : 'Evidence'}
         </span>
-        <span className="text-xs text-base-content/60">p. {node.source.page}</span>
+        <span className="badge badge-ghost badge-xs">p. {node.source.page}</span>
         {node.source.verified === false && (
           <span
             className="badge badge-xs badge-warning ml-auto"

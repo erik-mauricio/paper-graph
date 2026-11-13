@@ -1,38 +1,33 @@
 import type { GraphNode, Relation } from '../types/graph'
+import Quote from './Quote'
+import SourceMeta from './SourceMeta'
 
 type NodeDetailsProps = {
   node: GraphNode
   relation?: Relation
+  onShowInPdf?: (node: GraphNode) => void
 }
 
-
-function NodeDetails({ node, relation }: NodeDetailsProps) {
+function NodeDetails({ node, relation, onShowInPdf }: NodeDetailsProps) {
   return (
-    <div className="flex flex-col gap-2 rounded-box border border-base-300 p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        {relation && (
-          <span
-            className={`badge badge-sm badge-soft ${
-              relation === 'supports' ? 'badge-primary' : 'badge-error'
-            }`}
-          >
-            {relation}
-          </span>
-        )}
-        {node.type === 'claim' && (
-          <span className="badge badge-sm badge-outline">claim</span>
-        )}
-        <p className="font-medium">{node.text}</p>
-      </div>
+    <div className="card card-border card-sm bg-base-100">
+      <div className="card-body gap-3">
+        <div className="flex flex-wrap items-start gap-2">
+          {relation && (
+            <span
+              className={`badge badge-sm badge-soft ${
+                relation === 'supports' ? 'badge-primary' : 'badge-error'
+              }`}
+            >
+              {relation}
+            </span>
+          )}
+          {node.type === 'claim' && <span className="badge badge-sm badge-outline">claim</span>}
+          <p className="min-w-48 flex-1 font-medium">{node.text}</p>
+        </div>
 
-      <blockquote className="text-sm italic text-base-content/70">
-        “{node.source.quote}”
-      </blockquote>
-      <div className="flex items-center gap-2">
-        <p className="text-xs text-base-content/70">Page {node.source.page}</p>
-        {node.source.verified === false && (
-          <span className="badge badge-sm badge-warning">unverified quote</span>
-        )}
+        <Quote text={node.source.quote} />
+        <SourceMeta node={node} onShowInPdf={onShowInPdf} />
       </div>
     </div>
   )

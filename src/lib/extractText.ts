@@ -1,12 +1,9 @@
-import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist'
-import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import type { PageText } from '../types/graph'
-
-GlobalWorkerOptions.workerSrc = workerUrl
+import { loadPdf } from './pdf'
 
 // Reads the text of every page in a PDF file.
 export async function extractText(file: File): Promise<PageText[]> {
-  const pdf = await getDocument({ data: await file.arrayBuffer() }).promise
+  const pdf = await loadPdf(file)
   const pages: PageText[] = []
 
   for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
@@ -18,6 +15,8 @@ export async function extractText(file: File): Promise<PageText[]> {
 
     pages.push({ page: pageNumber, text })
   }
+
+  await pdf.loadingTask.destroy()
 
   if (pages.every((page) => page.text.trim() === '')) {
     throw new Error("No text found. Scanned PDFs aren't supported yet.")

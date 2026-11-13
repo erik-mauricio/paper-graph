@@ -110,3 +110,109 @@
 .react-flow__node-argument:focus-visible {
   outline: none;
 }
+
+/* ---------- PDF viewer ---------- */
+
+/* pdf.js text layer: invisible text laid over the page canvas so it can be
+   selected. Adapted from pdfjs-dist/web/pdf_viewer.css. */
+.pdf-page {
+  --user-unit: 1;
+  --total-scale-factor: calc(var(--scale-factor) * var(--user-unit));
+  --scale-round-x: 1px;
+  --scale-round-y: 1px;
+}
+
+.textLayer {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  line-height: 1;
+  text-align: initial;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  caret-color: CanvasText;
+  z-index: 2;
+
+  --min-font-size: 1;
+  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
+  --min-font-size-inv: calc(1 / var(--min-font-size));
+
+  :is(span, br) {
+    color: transparent;
+    position: absolute;
+    white-space: pre;
+    cursor: text;
+    transform-origin: 0% 0%;
+  }
+
+  > :not(.markedContent),
+  .markedContent span:not(.markedContent) {
+    z-index: 1;
+    --font-height: 0;
+    font-size: calc(var(--text-scale-factor) * var(--font-height));
+    --scale-x: 1;
+    --rotate: 0deg;
+    transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
+  }
+
+  .markedContent {
+    display: contents;
+  }
+
+  ::selection {
+    background: rgb(37 99 235 / 0.3);
+    color: transparent;
+  }
+
+  br::selection {
+    background: transparent;
+  }
+
+  .endOfContent {
+    display: block;
+    position: absolute;
+    inset: 100% 0 0;
+    z-index: 0;
+    cursor: default;
+    user-select: none;
+  }
+
+  &.selecting .endOfContent {
+    top: 0;
+  }
+}
+
+[data-main-rotation="90"] { transform: rotate(90deg) translateY(-100%); }
+[data-main-rotation="180"] { transform: rotate(180deg) translate(-100%, -100%); }
+[data-main-rotation="270"] { transform: rotate(270deg) translateX(-100%); }
+
+.pdf-highlight {
+  position: absolute;
+  border-radius: 2px;
+  mix-blend-mode: multiply;
+}
+
+.pdf-highlight-active {
+  outline: 2px solid rgb(0 0 0 / 0.45);
+  outline-offset: 1px;
+}
+
+/* Marks the quote you jumped to from the graph. */
+.pdf-flash {
+  position: absolute;
+  border-radius: 2px;
+  background: color-mix(in oklch, var(--color-primary) 22%, transparent);
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+  animation: pdf-flash 1.2s ease-out 2;
+}
+
+@keyframes pdf-flash {
+  0% { background: color-mix(in oklch, var(--color-primary) 55%, transparent); }
+  100% { background: color-mix(in oklch, var(--color-primary) 22%, transparent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pdf-flash { animation: none; }
+}
