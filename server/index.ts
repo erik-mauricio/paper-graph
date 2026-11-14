@@ -1,8 +1,17 @@
-// The API server (Express, port 3001). One route: POST /api/extract turns a paper's
-// page text into a claims-and-evidence graph, served from the cache when possible.
+// The API server (Express, port 3001). POST /api/extract turns a paper's page text
+// into a claims-and-evidence graph; POST /api/related finds related work on
+// Semantic Scholar. Both are served from the cache when possible.
 import express from 'express'
-import { cacheKey, readCache, writeCache } from './cache.ts'
+import {
+  cacheKey,
+  readCache,
+  readRelatedCache,
+  relatedCacheKey,
+  writeCache,
+  writeRelatedCache,
+} from './cache.ts'
 import { extractGraph } from './extraction/gemini.ts'
+import { findRelatedWork, RelatedBusyError } from './related/semanticScholar.ts'
 
 const PORT = 3001
 
@@ -53,6 +62,42 @@ app.post('/api/extract', async (req, res) => {
   } catch (error) {
     console.error(error)
     res.status(500).json({ error: friendlyError(error) })
+  }
+})
+
+// Finds reviews, the papers it builds on, and similar papers for the paper being read.
+// Body: { title, firstPage, topic? } (RelatedRequest).
+app.post('/api/related', async (req, res) => {
+  const { title, firstPage, topic } = req.body ?? {}
+  if (typeof title !== 'string' || typeof firstPage !== 'string') {
+    res.status(400).json({ error: 'Request must include the paper title and first page.' })
+    return
+  }
+  const request = { title, firstPage: firstPage.slice(0, 5000), topic: typeof topic === 'string' ? topic : undefined }
+
+  const key = relatedCacheKey(request)
+  const cached = await readRelatedCache(key)
+  if (cached) {
+    res.json(cached)
+    return
+  }
+
+  try {
+    const related = await findRelatedWork(request)
+    console.log(
+      `[related] ${related.match ? `matched by ${related.match.how}` : 'no match'} · ` +
+        `${related.reviews.length} reviews, ${related.buildsOn.length} builds-on, ${related.similar.length} similar`,
+    )
+    await writeRelatedCache(key, related)
+    res.json(related)
+  } catch (error) {
+    console.error(error)
+    const busy = error instanceof RelatedBusyError
+    res.status(busy ? 503 : 502).json({
+      error: busy
+        ? 'Semantic Scholar is busy right now. Try again in a minute.'
+        : "Couldn't reach Semantic Scholar to look up related papers.",
+    })
   }
 })
 

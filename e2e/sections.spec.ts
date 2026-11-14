@@ -20,7 +20,8 @@ test.beforeEach(async ({ page }) => openSample(page))
 
 test('sections: create, rename, drag nodes in and out, move, resize', async ({ page }) => {
   await page.getByRole('button', { name: '+ Section' }).click()
-  const section = page.locator('.react-flow__node-section').first()
+  // The sample starts with the AI's "Methods & study design" section; the new one is last.
+  const section = page.locator('.react-flow__node-section').last()
   // Rename by double-clicking the name (dispatched: a link may cross the header).
   await section.locator('h3').dispatchEvent('dblclick')
   await section.locator('input').fill('Nap findings')
@@ -33,7 +34,7 @@ test('sections: create, rename, drag nodes in and out, move, resize', async ({ p
   const from = await center(e4)
   await drag(page, { x: from.x, y: from.y + 20 }, { x: box.x + box.width / 2, y: box.y + box.height / 2 + 10 })
   let state = await saved(page)
-  expect(state.positions.e4.sectionId).toBe(state.sections[0].id)
+  expect(state.positions.e4.sectionId).toBe(state.sections.at(-1).id)
 
   // Moving the section carries e4 along.
   const before = (await e4.boundingBox())!
@@ -49,7 +50,7 @@ test('sections: create, rename, drag nodes in and out, move, resize', async ({ p
     y: sizeBefore.y + sizeBefore.height + 80,
   })
   state = await saved(page)
-  expect(state.sections[0].width).toBeGreaterThan(sizeBefore.width)
+  expect(state.sections.at(-1).width).toBeGreaterThan(sizeBefore.width)
 
   // Drag e4 back out.
   const inside = await center(e4)
@@ -62,16 +63,16 @@ test('edits survive a reload, and Reset returns the AI graph', async ({ page }) 
   await page.locator('dialog[open] textarea').fill('A note')
   await page.locator('dialog[open]').getByRole('button', { name: 'Add to graph' }).click()
   await page.getByRole('button', { name: '+ Section' }).click()
-  await expect(argumentNodes(page)).toHaveCount(13)
+  await expect(argumentNodes(page)).toHaveCount(16)
 
   await page.reload()
-  await expect(argumentNodes(page)).toHaveCount(13)
-  await expect(page.locator('.react-flow__node-section')).toHaveCount(1)
+  await expect(argumentNodes(page)).toHaveCount(16)
+  await expect(page.locator('.react-flow__node-section')).toHaveCount(2)
 
   await page.locator('summary[aria-label="More graph options"]').click()
   await page.getByRole('button', { name: 'Reset to AI graph' }).click()
   await page.locator('dialog[open]').getByRole('button', { name: 'Reset graph' }).click()
-  await expect(argumentNodes(page)).toHaveCount(12)
+  await expect(argumentNodes(page)).toHaveCount(15)
   expect(await saved(page)).toBeNull()
 })
 

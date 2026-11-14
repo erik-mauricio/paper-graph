@@ -3,9 +3,10 @@ import { argumentNodes, center, drag, edges, node, openSample, picker, plusOf, s
 
 test.beforeEach(async ({ page }) => openSample(page))
 
+// The sample has 15 nodes (4 claims, 8 evidence, 3 methods) and 13 links.
 test('lays the graph out claim-first', async ({ page }) => {
-  await expect(argumentNodes(page)).toHaveCount(12)
-  await expect(edges(page)).toHaveCount(9)
+  await expect(argumentNodes(page)).toHaveCount(15)
+  await expect(edges(page)).toHaveCount(13)
   const c1 = await node(page, 'c1').boundingBox()
   const e1 = await node(page, 'e1').boundingBox()
   expect(c1!.x).toBeLessThan(e1!.x)
@@ -20,7 +21,7 @@ test('"+" menu adds evidence linked to the claim', async ({ page }) => {
   await form.locator('textarea').fill('New evidence for c1')
   await form.getByRole('button', { name: 'Add to graph' }).click()
 
-  await expect(argumentNodes(page)).toHaveCount(13)
+  await expect(argumentNodes(page)).toHaveCount(16)
   const state = await saved(page)
   const added = state.graph.nodes.at(-1)
   expect(state.graph.edges.at(-1)).toMatchObject({ from: added.id, to: 'c1', relation: 'supports' })
@@ -73,9 +74,9 @@ test('clicking a link shows its chip: switch relation, delete, undo', async ({ p
   expect((await saved(page)).graph.edges.find((e: { id: string }) => e.id === 'l2').relation).toBe('contradicts')
 
   await chip.getByRole('button', { name: /Delete link/ }).click()
-  await expect(edges(page)).toHaveCount(8)
+  await expect(edges(page)).toHaveCount(12)
   await page.locator('.toast').getByRole('button', { name: 'Undo' }).click()
-  await expect(edges(page)).toHaveCount(9)
+  await expect(edges(page)).toHaveCount(13)
 })
 
 test('quick-actions bar edits and deletes with undo', async ({ page }) => {
@@ -86,9 +87,9 @@ test('quick-actions bar edits and deletes with undo', async ({ page }) => {
   await page.keyboard.press('Escape')
 
   await bar.getByRole('button', { name: 'Delete' }).click()
-  await expect(argumentNodes(page)).toHaveCount(11)
+  await expect(argumentNodes(page)).toHaveCount(14)
   await page.locator('.toast').getByRole('button', { name: 'Undo' }).click()
-  await expect(argumentNodes(page)).toHaveCount(12)
+  await expect(argumentNodes(page)).toHaveCount(15)
 })
 
 test('double-click adds a node on empty canvas and edits a node', async ({ page }) => {

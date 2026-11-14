@@ -38,4 +38,29 @@ describe('verifyQuotes', () => {
     const graph: PaperGraph = { title: 't', edges: [], nodes: [{ id: 'u', type: 'note', text: 'my note' }] }
     expect(verifyQuotes(graph, pages).nodes[0]).toEqual(graph.nodes[0])
   })
+
+  it('checks the quotes in the overview and study design too', () => {
+    const fact = (quote: string, page: number) => ({ text: 't', source: { page, quote } })
+    const graph: PaperGraph = {
+      title: 't',
+      nodes: [],
+      edges: [],
+      context: {
+        summary: 's',
+        background: [fact('converts text-based responses', 1)],
+        study: {
+          kind: 'experiment',
+          question: fact('an Fscore of 97.24%', 1),
+          design: [],
+          participants: [],
+          groups: [{ name: 'g', role: 'control', description: 'd', source: { page: 1, quote: 'not in the paper' } }],
+          measures: [],
+        },
+      },
+    }
+    const { context } = verifyQuotes(graph, pages)
+    expect(context?.background[0].source.verified).toBe(true)
+    expect(context?.study.question.source).toMatchObject({ page: 2, verified: true })
+    expect(context?.study.groups[0].source.verified).toBe(false)
+  })
 })

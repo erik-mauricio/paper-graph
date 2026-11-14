@@ -1,6 +1,6 @@
 # PaperGraph
 
-PaperGraph turns a research paper into an interactive **argument graph**. Upload a PDF and an AI model (Gemini) pulls out the paper's main claims and the evidence for and against them. Every node links back to the exact passage in the PDF, so you can check the AI's reading instead of trusting a summary. You can edit the graph, add your own notes and links, group nodes into sections, and highlight the PDF side by side.
+PaperGraph turns a research paper into an interactive **argument graph**. Upload a PDF and an AI model (Gemini) pulls out the paper's main claims and the evidence for and against them. It also pulls out how the study was done (its design, its control and treatment groups, and what it measured) and shows that both as an Overview page and as a "Methods & study design" section in the graph. Every node links back to the exact passage in the PDF, so you can check the AI's reading instead of trusting a summary. You can edit the graph, add your own notes and links, group nodes into sections, and highlight the PDF side by side.
 
 It's a course project aimed at students and early-career programmers reading technical papers.
 
@@ -9,6 +9,7 @@ It's a course project aimed at students and early-career programmers reading tec
 ```bash
 npm install
 echo "GEMINI_API_KEY=your-key" > .env   # optional: GEMINI_MODEL=... to try a model first
+# optional, for reliable related-work lookups: SEMANTIC_SCHOLAR_API_KEY=... (free from semanticscholar.org)
 npm run dev                             # app on http://localhost:5173, API on :3001
 ```
 
@@ -42,7 +43,8 @@ Upload PDF ──► extractText (pdf.js, in the browser)
 
 ```
 shared/                 types + JSON schema used by both server and app
-server/                 Express API: index.ts (routes), cache.ts, extraction/ (Gemini, prompt, trimming)
+server/                 Express API: index.ts (routes), cache.ts, extraction/ (Gemini, prompt, trimming),
+                        related/ (Semantic Scholar lookups)
 src/app/                entry point, top-level flow (App.tsx), navbar, theme toggle
 src/pages/              Landing, Loading, Error, Results (the main screen)
 src/features/upload/    picking a PDF, reading its text, calling the API, checking quotes
@@ -52,6 +54,8 @@ src/features/graph/
   canvas/               the React Flow canvas, node/link/section components, linking gestures
   ui/                   panels, menus, dialogs, and toasts around the canvas
 src/features/list/      the List view
+src/features/overview/  the Overview view: summary, background, study design (groups, measures), methods
+src/features/related/   Related work in the Overview: reviews, papers it builds on, similar papers
 src/features/pdf/       PDF reader, highlights, annotations sidebar
 src/components/         small UI pieces shared by several features
 src/styles/             theme.css (daisyUI themes), graph.css, pdf.css

@@ -4,7 +4,7 @@ import type { FlowNode } from '@/features/graph/model/layout'
 import { HIGHLIGHT_COLORS } from '@/features/pdf/highlightColors'
 
 // The small overview in the corner, colored like the graph:
-// claims blue, evidence ochre, notes plum, sections in their own color.
+// claims blue, evidence ochre, methods green, notes plum, sections in their own color.
 function GraphMiniMap() {
   return (
     <MiniMap
@@ -17,6 +17,7 @@ function GraphMiniMap() {
         const type = node.data.node.type
         if (type === 'claim') return 'var(--color-primary)'
         if (type === 'note') return 'var(--color-accent)'
+        if (type === 'method') return 'var(--color-success)'
         return 'var(--color-secondary)'
       }}
     />

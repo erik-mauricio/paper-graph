@@ -2,8 +2,10 @@
 // Links are stored supporter → supported (evidence → claim).
 import type { HighlightColor } from './colors.ts'
 
+// 'method' nodes describe how the study was done (its design, its control and
+// treatment groups, what it measured) and link to the results they produced.
 // 'note' nodes are only ever made by the user.
-export type NodeType = 'claim' | 'evidence' | 'note'
+export type NodeType = 'claim' | 'evidence' | 'method' | 'note'
 
 export type Relation = 'supports' | 'contradicts'
 
@@ -40,6 +42,56 @@ export type PaperGraph = {
   title: string
   nodes: GraphNode[]
   edges: GraphEdge[]
+  // The paper's overview, background and study design. Missing in graphs made
+  // before this was extracted (old cache entries and saved edits).
+  context?: PaperContext
+}
+
+// One point about the paper, in plain words, with the passage it comes from.
+export type Fact = {
+  text: string
+  source: Source
+}
+
+export type StudyKind =
+  | 'experiment'
+  | 'observational'
+  | 'computational'
+  | 'review'
+  | 'theoretical'
+  | 'other'
+
+// A group or condition the study compares. Only experiments and comparisons have these.
+export type StudyGroup = {
+  name: string
+  role: 'control' | 'treatment' | 'comparison'
+  // Exactly what this group got or did.
+  description: string
+  source: Source
+}
+
+// What the study is and how it was done. Lists are empty when they don't
+// apply (a theory paper has no control group).
+export type StudyDesign = {
+  kind: StudyKind
+  question: Fact
+  design: Fact[]
+  // Who or what was studied: participants, sample size, datasets.
+  participants: Fact[]
+  groups: StudyGroup[]
+  // What was measured or compared to judge the outcome.
+  measures: Fact[]
+}
+
+export type PaperContext = {
+  // Two or three plain-language sentences on what the paper does and finds.
+  summary: string
+  // 3 to 6 keywords naming the research topic, used to search for related
+  // work. Missing in graphs made before related work existed.
+  topic?: string
+  // The problem and why it matters, from the paper's own introduction.
+  background: Fact[]
+  study: StudyDesign
 }
 
 // The text of one PDF page.

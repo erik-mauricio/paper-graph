@@ -8,8 +8,89 @@ import type { PaperGraph } from '@shared/graph'
 // - a claim linked to another claim (c2 -> c1)
 // - contradicting evidence (e6)
 // - evidence with no links (e8)
+// - methods linked to the results they produced (m1-m3), and a study design overview
 export const sampleGraph: PaperGraph = {
   title: 'Sleep Duration and Memory Consolidation in Undergraduate Students',
+  context: {
+    summary:
+      'The authors tracked how long 120 undergraduates slept and tested their memory each morning. ' +
+      'Students who slept longer, and especially those who got more deep sleep, remembered more; a short nap did not make up for lost sleep.',
+    topic: 'sleep duration memory consolidation students',
+    background: [
+      {
+        text: 'Many students cut sleep to study, but it is unclear how much this hurts memory for what they just learned.',
+        source: {
+          page: 1,
+          quote: 'Undergraduates routinely trade sleep for study time, yet the cost of this trade for newly learned material is poorly understood.',
+        },
+      },
+      {
+        text: 'Lab studies link deep sleep to memory, but few have looked at students sleeping at home over several weeks.',
+        source: {
+          page: 2,
+          quote: 'Most evidence linking slow-wave sleep to memory comes from single nights in the laboratory.',
+        },
+      },
+    ],
+    study: {
+      kind: 'observational',
+      question: {
+        text: 'Does sleeping longer improve next-day recall, and can a short nap replace a full night?',
+        source: {
+          page: 2,
+          quote: 'We asked whether natural variation in sleep predicts next-day recall, and whether a brief nap can substitute for nocturnal sleep.',
+        },
+      },
+      design: [
+        {
+          text: 'A three-week field study with sleep trackers, plus a one-day lab study comparing a nap to no sleep and to a full night.',
+          source: {
+            page: 3,
+            quote: 'The study combined a three-week field phase with a single-day laboratory nap comparison.',
+          },
+        },
+      ],
+      participants: [
+        {
+          text: '120 undergraduates, mostly in their first or second year.',
+          source: {
+            page: 3,
+            quote: 'One hundred and twenty undergraduates took part in the field phase.',
+          },
+        },
+      ],
+      groups: [
+        {
+          name: 'No sleep',
+          role: 'control',
+          description: 'Stayed awake in the lab between learning the words and the recall test.',
+          source: { page: 7, quote: 'Control participants remained awake under supervision between learning and test.' },
+        },
+        {
+          name: '30-minute nap',
+          role: 'treatment',
+          description: 'Took a 30-minute nap in the lab between learning and the test.',
+          source: { page: 7, quote: 'Nap participants were given a 30-minute sleep opportunity after learning.' },
+        },
+        {
+          name: 'Full night',
+          role: 'comparison',
+          description: 'Learned the words in the evening and slept at home overnight before the test.',
+          source: { page: 7, quote: 'A third group learned in the evening and was tested after a full night of sleep at home.' },
+        },
+      ],
+      measures: [
+        {
+          text: 'Number of word pairs recalled the next day on a paired-associate task.',
+          source: { page: 3, quote: 'Recall was tested with a standard paired-associate word task.' },
+        },
+        {
+          text: 'Total sleep and slow-wave sleep time, from wrist-worn trackers.',
+          source: { page: 3, quote: 'Sleep duration and sleep stages were estimated from wrist-worn trackers.' },
+        },
+      ],
+    },
+  },
   nodes: [
     {
       id: 'c1',
@@ -131,6 +212,33 @@ export const sampleGraph: PaperGraph = {
           'The majority of participants were first- or second-year undergraduates.',
       },
     },
+    {
+      id: 'm1',
+      type: 'method',
+      text: 'Students wore sleep trackers for three weeks and took a recall test every morning.',
+      source: {
+        page: 3,
+        quote: 'Sleep duration and sleep stages were estimated from wrist-worn trackers.',
+      },
+    },
+    {
+      id: 'm2',
+      type: 'method',
+      text: 'Lab study: a 30-minute nap group compared with a no-sleep control and a full-night group.',
+      source: {
+        page: 7,
+        quote: 'Nap participants were given a 30-minute sleep opportunity after learning.',
+      },
+    },
+    {
+      id: 'm3',
+      type: 'method',
+      text: 'Caffeine intake was logged daily and added to the analysis as a covariate.',
+      source: {
+        page: 9,
+        quote: 'Daily caffeine intake was self-reported and entered as a covariate.',
+      },
+    },
   ],
   edges: [
     { id: 'l1', from: 'e1', to: 'c1', relation: 'supports' },
@@ -142,5 +250,9 @@ export const sampleGraph: PaperGraph = {
     { id: 'l7', from: 'e4', to: 'c3', relation: 'supports' },
     { id: 'l8', from: 'e5', to: 'c4', relation: 'supports' },
     { id: 'l9', from: 'e6', to: 'c4', relation: 'contradicts' },
+    { id: 'l10', from: 'm1', to: 'e1', relation: 'supports' },
+    { id: 'l11', from: 'm1', to: 'e3', relation: 'supports' },
+    { id: 'l12', from: 'm2', to: 'e4', relation: 'supports' },
+    { id: 'l13', from: 'm3', to: 'e5', relation: 'supports' },
   ],
 }

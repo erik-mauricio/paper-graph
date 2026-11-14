@@ -42,8 +42,40 @@ const NEW_NODE_COLUMN_GAP = 80
 
 // ---- Loading and saving ----
 
+// The section the AI's method nodes start in. A normal section otherwise:
+// the user can rename, resize, or delete it.
+export const METHODS_SECTION_ID = 'ai-methods'
+
 export function fromAi(graph: PaperGraph): EditorState {
-  return { graph, positions: initialPositions(graph), sections: [], edited: false }
+  const positions = initialPositions(graph)
+  const methods = methodsSection(graph, positions)
+  return { graph, positions: methods?.positions ?? positions, sections: methods ? [methods.section] : [], edited: false }
+}
+
+// Wraps the methods column (from initialPositions) in a section, so the study
+// design reads as one labeled block. Null when the paper has no methods.
+function methodsSection(graph: PaperGraph, positions: Positions): { section: Section; positions: Positions } | null {
+  const ids = graph.nodes.filter((n) => n.type === 'method').map((n) => n.id)
+  if (!ids.length) return null
+
+  const corners = ids.map((id) => positions[id])
+  const x = Math.min(...corners.map((p) => p.x)) - GAP
+  const y = Math.min(...corners.map((p) => p.y)) - SECTION_HEADER
+  const section: Section = {
+    id: METHODS_SECTION_ID,
+    name: 'Methods & study design',
+    color: 'green',
+    x,
+    y,
+    width: NODE_WIDTH + 2 * GAP,
+    height: Math.max(...corners.map((p) => p.y)) + NODE_HEIGHT + GAP - y,
+  }
+
+  const inside = { ...positions }
+  for (const id of ids) {
+    inside[id] = { x: positions[id].x - x, y: positions[id].y - y, sectionId: section.id }
+  }
+  return { section, positions: inside }
 }
 
 // Reads a saved state (the raw localStorage string). Falls back to the AI graph
@@ -109,7 +141,11 @@ export function addNode(s: EditorState, node: GraphNode, sectionId: string | nul
   } else {
     const loose = Object.entries(s.positions).filter(([, p]) => !p.sectionId)
     const aiLoose = loose.filter(([id]) => s.graph.nodes.find((n) => n.id === id)?.origin !== 'user')
-    const right = Math.max(0, ...aiLoose.map(([, p]) => p.x + NODE_WIDTH)) + NEW_NODE_COLUMN_GAP
+    // Also clear the AI's methods section, which sits right of the argument.
+    const aiSections = s.sections.filter((sec) => sec.id === METHODS_SECTION_ID)
+    const right =
+      Math.max(0, ...aiLoose.map(([, p]) => p.x + NODE_WIDTH), ...aiSections.map((sec) => sec.x + sec.width)) +
+      NEW_NODE_COLUMN_GAP
     const top = Math.min(...loose.map(([, p]) => p.y), 0)
     const inColumn = loose.filter(([, p]) => p.x === right).length
     position = { x: right, y: top + inColumn * (NODE_HEIGHT + GAP), sectionId: null }

@@ -6,7 +6,7 @@
 }
 
 /* Warm paper for long reading: cream surfaces, warm ink text, and an ink-blue accent.
-   Claims (blue), evidence (ochre) and notes (plum) differ in hue, and blue "supports"
+   Claims (blue), evidence (ochre), methods (green) and notes (plum) differ in hue, and blue "supports"
    vs vermilion "contradicts" stays readable for color-blind readers. */
 @plugin "daisyui/theme" {
   name: "paper";
@@ -28,7 +28,7 @@
   --color-neutral-content: oklch(96% 0.012 85);
   --color-info: oklch(52% 0.1 230);
   --color-info-content: oklch(98% 0.01 85);
-  --color-success: oklch(50% 0.1 150);
+  --color-success: oklch(50% 0.1 150); /* methods */
   --color-success-content: oklch(98% 0.01 85);
   --color-warning: oklch(80% 0.13 75);
   --color-warning-content: oklch(28% 0.05 60);
@@ -69,7 +69,7 @@
   --color-neutral-content: oklch(92% 0.015 80);
   --color-info: oklch(74% 0.09 230);
   --color-info-content: oklch(20% 0.03 230);
-  --color-success: oklch(72% 0.11 150);
+  --color-success: oklch(72% 0.11 150); /* methods */
   --color-success-content: oklch(20% 0.03 150);
   --color-warning: oklch(82% 0.12 75);
   --color-warning-content: oklch(22% 0.04 60);
