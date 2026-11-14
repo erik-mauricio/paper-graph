@@ -1,7 +1,7 @@
 // The List view: claims with their evidence underneath, then unlinked
 // evidence and the user's notes. The alternative to the graph in ResultsPage.
 import type { GraphNode, PaperGraph } from '@shared/graph'
-import { getClaims, getLinksTo, getUnlinkedEvidence } from '@/features/graph/model/graphQueries'
+import { getClaimLabels, getLinksTo, getUnlinkedEvidence } from '@/features/graph/model/graphQueries'
 import ClaimItem from './ClaimItem'
 import NodeDetails from './NodeDetails'
 
@@ -11,7 +11,11 @@ type ListViewProps = {
 }
 
 function ListView({ graph, onShowInPdf }: ListViewProps) {
-  const claims = getClaims(graph)
+  // Claims in outline order (1, 1a, 1b, 2, ...); the labels map is already in that order.
+  const claimLabels = getClaimLabels(graph)
+  const claims = [...claimLabels.keys()]
+    .map((id) => graph.nodes.find((n) => n.id === id))
+    .filter((n): n is GraphNode => Boolean(n))
   const unlinkedEvidence = getUnlinkedEvidence(graph)
   const notes = graph.nodes.filter((n) => n.type === 'note')
 
@@ -29,6 +33,7 @@ function ListView({ graph, onShowInPdf }: ListViewProps) {
             key={claim.id}
             claim={claim}
             links={getLinksTo(graph, claim.id)}
+            claimLabels={claimLabels}
             onShowInPdf={onShowInPdf}
           />
         ))}

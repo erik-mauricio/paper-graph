@@ -1,6 +1,7 @@
 // One claim in the List view, expandable to show its quote and evidence.
 import type { Link } from '@/features/graph/model/graphQueries'
 import type { GraphNode } from '@shared/graph'
+import { typeLabel } from '@/components/nodeTypes'
 import NodeDetails from './NodeDetails'
 import Quote from '@/components/Quote'
 import SourceMeta from '@/components/SourceMeta'
@@ -8,15 +9,19 @@ import SourceMeta from '@/components/SourceMeta'
 type ClaimItemProps = {
   claim: GraphNode
   links: Link[]
+  // Every claim's number, from getClaimLabels.
+  claimLabels: Map<string, string>
   onShowInPdf?: (node: GraphNode) => void
 }
 
-function ClaimItem({ claim, links, onShowInPdf }: ClaimItemProps) {
+function ClaimItem({ claim, links, claimLabels, onShowInPdf }: ClaimItemProps) {
   return (
     <details className="collapse collapse-arrow border border-base-300 bg-base-100">
       <summary className="collapse-title">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <span className="badge badge-primary badge-sm">Claim</span>
+          <span className="badge badge-primary badge-sm shrink-0">
+            {typeLabel('claim', claimLabels.get(claim.id))}
+          </span>
           <span className="flex-1 font-reading font-semibold leading-snug">{claim.text}</span>
           <span className="badge badge-ghost badge-sm shrink-0">
             {links.length} linked
@@ -43,6 +48,7 @@ function ClaimItem({ claim, links, onShowInPdf }: ClaimItemProps) {
             key={edge.id}
             node={node}
             relation={edge.relation}
+            claimLabel={claimLabels.get(node.id)}
             onShowInPdf={onShowInPdf}
           />
         ))}

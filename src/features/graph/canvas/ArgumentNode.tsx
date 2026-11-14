@@ -72,7 +72,9 @@ function ArgumentNode({ id, data, selected }: NodeProps<ArgumentFlowNode>) {
       </NodeToolbar>
 
       <div className="flex items-center gap-1.5">
-        <span className={`badge badge-sm ${style.badge}`}>{style.label}</span>
+        <span className={`badge badge-sm ${style.badge}`}>
+          {data.claimLabel ? `${style.label} ${data.claimLabel}` : style.label}
+        </span>
         {node.source && <span className="badge badge-ghost badge-xs">p. {node.source.page}</span>}
         {node.origin === 'user' && (
           <span className="badge badge-outline badge-xs" title="You added this">

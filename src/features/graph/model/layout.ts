@@ -3,11 +3,13 @@
 import { Graph, layout } from '@dagrejs/dagre'
 import { MarkerType, type Edge, type Node } from '@xyflow/react'
 import type { GraphEdge, GraphNode, PaperGraph, Relation, Section } from '@shared/graph'
+import { getClaimLabels } from './graphQueries'
 
 export const NODE_WIDTH = 260
 export const NODE_HEIGHT = 112
 
-export type ArgumentNodeData = { node: GraphNode; sectionName?: string }
+// claimLabel is the claim's number ("1a"), from getClaimLabels.
+export type ArgumentNodeData = { node: GraphNode; sectionName?: string; claimLabel?: string }
 export type ArgumentFlowNode = Node<ArgumentNodeData, 'argument'>
 
 export type SectionNodeData = { section: Section }
@@ -68,6 +70,7 @@ export function toFlowNodes(
   sections: Section[],
 ): FlowNode[] {
   const sectionIds = new Set(sections.map((s) => s.id))
+  const claimLabels = getClaimLabels(graph)
 
   const sectionNodes: SectionFlowNode[] = sections.map((section) => ({
     id: section.id,
@@ -88,7 +91,7 @@ export function toFlowNodes(
       type: 'argument',
       position: { x: pos.x, y: pos.y },
       parentId,
-      data: { node },
+      data: { node, claimLabel: claimLabels.get(node.id) },
     }
   })
 
