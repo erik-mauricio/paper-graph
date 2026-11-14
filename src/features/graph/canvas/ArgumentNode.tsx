@@ -4,19 +4,14 @@ import { Handle, NodeToolbar, Position, useConnection, type NodeProps } from '@x
 import { useContext } from 'react'
 import type { ArgumentFlowNode } from '@/features/graph/model/layout'
 import { NODE_HEIGHT, NODE_WIDTH } from '@/features/graph/model/layout'
-import type { NodeType } from '@shared/graph'
+import { TYPE_BADGE, TYPE_BORDER, typeLabel } from '@/components/nodeTypes'
+import LockIcon from '@/components/LockIcon'
 import { GraphActionsContext } from './graphActions'
-
-const TYPE_STYLE: Record<NodeType, { label: string; badge: string; border: string }> = {
-  claim: { label: 'Claim', badge: 'badge-primary', border: 'border-primary' },
-  evidence: { label: 'Evidence', badge: 'badge-secondary', border: 'border-secondary' },
-  note: { label: 'Note', badge: 'badge-accent', border: 'border-accent border-dashed' },
-}
 
 function ArgumentNode({ id, data, selected }: NodeProps<ArgumentFlowNode>) {
   const { node } = data
-  const style = TYPE_STYLE[node.type]
   const actions = useContext(GraphActionsContext)
+  const locked = actions?.isLocked(id) ?? false
 
   // The node a link is being drawn from: by dragging a "+", or in link mode.
   const draggingFrom = useConnection((c) => (c.inProgress ? c.fromNode.id : null))
@@ -30,7 +25,7 @@ function ArgumentNode({ id, data, selected }: NodeProps<ArgumentFlowNode>) {
     <div
       style={{ width: NODE_WIDTH, height: NODE_HEIGHT }}
       className={`relative flex flex-col gap-1.5 rounded-box border-2 bg-base-100 p-3 shadow-sm transition ${
-        style.border
+        TYPE_BORDER[node.type]
       } ${selected ? 'shadow-lg ring-2 ring-primary/40' : ''} ${
         canDrop ? 'outline-2 outline-offset-4 outline-primary outline-dashed' : ''
       } ${blocked ? 'opacity-40' : ''} ${actions?.linkSource && canDrop ? 'cursor-pointer' : ''}`}
@@ -63,6 +58,14 @@ function ArgumentNode({ id, data, selected }: NodeProps<ArgumentFlowNode>) {
           </button>
           <button
             type="button"
+            className="btn btn-xs join-item"
+            title="Lock on screen (L)"
+            onClick={() => actions?.onToggleLock(id)}
+          >
+            {locked ? 'Unlock' : 'Lock'}
+          </button>
+          <button
+            type="button"
             className="btn btn-xs join-item text-error"
             onClick={() => actions?.onDeleteNode(id)}
           >
@@ -72,9 +75,15 @@ function ArgumentNode({ id, data, selected }: NodeProps<ArgumentFlowNode>) {
       </NodeToolbar>
 
       <div className="flex items-center gap-1.5">
-        <span className={`badge badge-sm ${style.badge}`}>
-          {data.claimLabel ? `${style.label} ${data.claimLabel}` : style.label}
+        <span className={`badge badge-sm ${TYPE_BADGE[node.type].className}`}>
+          {typeLabel(node.type, data.claimLabel)}
         </span>
+        {locked && (
+          <span className="text-base-content/50" title="Locked on screen">
+            <LockIcon />
+            <span className="sr-only">Locked on screen</span>
+          </span>
+        )}
         {node.source && <span className="badge badge-ghost badge-xs">p. {node.source.page}</span>}
         {node.origin === 'user' && (
           <span className="badge badge-outline badge-xs" title="You added this">

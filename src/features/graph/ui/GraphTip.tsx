@@ -1,4 +1,4 @@
-// One-time tip about the "+" and double-click, shown until dismissed.
+// One-time tip about the "+", double-click, and L to lock, shown until dismissed.
 import { useState } from 'react'
 
 const KEY = 'tip:graph-editing'
@@ -32,7 +32,8 @@ function GraphTip() {
     >
       <span>
         <strong>Tip:</strong> drag the <kbd className="kbd kbd-xs">+</kbd> on a node onto another node
-        to link them, or click it for options. Double-click empty space to add a node.
+        to link them, or click it for options. Double-click empty space to add a node. Select a node
+        and press <kbd className="kbd kbd-xs">L</kbd> to lock it on screen.
       </span>
       <button type="button" className="btn btn-ghost btn-xs" onClick={dismiss}>
         Got it

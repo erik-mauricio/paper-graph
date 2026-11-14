@@ -24,6 +24,9 @@ export type GraphActions = {
   canLink: (from: string, to: string) => boolean
   // In "link to an existing node" mode: the node the link starts from.
   linkSource: string | null
+  // Locking a node pins a copy of it to the screen (see useLockedNodes.ts).
+  isLocked: (nodeId: string) => boolean
+  onToggleLock: (nodeId: string) => void
 
   // Links
   onSetRelation: (edgeId: string, relation: Relation) => void
