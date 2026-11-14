@@ -8,10 +8,12 @@ import TypeBadge from '@/components/TypeBadge'
 type NodeDetailsProps = {
   node: GraphNode
   relation?: Relation
+  // The node's number if it's a claim ("1a").
+  claimLabel?: string
   onShowInPdf?: (node: GraphNode) => void
 }
 
-function NodeDetails({ node, relation, onShowInPdf }: NodeDetailsProps) {
+function NodeDetails({ node, relation, claimLabel, onShowInPdf }: NodeDetailsProps) {
   return (
     <div className="card card-border card-sm bg-base-100">
       <div className="card-body gap-3">
@@ -25,7 +27,7 @@ function NodeDetails({ node, relation, onShowInPdf }: NodeDetailsProps) {
               {relationToClaim(relation)}
             </span>
           )}
-          <TypeBadge type={node.type} />
+          <TypeBadge type={node.type} number={claimLabel} />
           <p className="min-w-48 flex-1 font-reading font-medium leading-relaxed">{node.text}</p>
         </div>
 

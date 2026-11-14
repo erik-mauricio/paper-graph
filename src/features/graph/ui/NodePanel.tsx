@@ -1,12 +1,12 @@
 // The selected node's details card: quote, links in and out, section, edit and delete.
 import { useEffect } from 'react'
-import { getLinksFrom, getLinksTo, type Link } from '@/features/graph/model/graphQueries'
+import { getClaimLabels, getLinksFrom, getLinksTo, type Link } from '@/features/graph/model/graphQueries'
 import { relationLabel } from '@/features/graph/model/relations'
 import type { GraphNode, PaperGraph, Relation, Section } from '@shared/graph'
 import Quote from '@/components/Quote'
 import SourceMeta from '@/components/SourceMeta'
 import TypeBadge from '@/components/TypeBadge'
-import { TYPE_BADGE } from '@/components/nodeTypes'
+import { TYPE_BADGE, typeLabel } from '@/components/nodeTypes'
 
 type NodePanelProps = {
   graph: PaperGraph
@@ -40,7 +40,9 @@ function NodePanel({
 }: NodePanelProps) {
   const incoming = getLinksTo(graph, node.id)
   const outgoing = getLinksFrom(graph, node.id)
+  const claimLabels = getClaimLabels(graph)
   const badge = TYPE_BADGE[node.type]
+  const title = typeLabel(node.type, claimLabels.get(node.id))
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -51,16 +53,16 @@ function NodePanel({
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  const linkProps = { onSelect, onSetRelation, onRemoveLink }
+  const linkProps = { claimLabels, onSelect, onSetRelation, onRemoveLink }
 
   return (
     <aside
-      aria-label={`${badge.label} details`}
+      aria-label={`${title} details`}
       className="card card-border absolute inset-x-2 bottom-2 z-10 max-h-[60%] bg-base-100 shadow-xl lg:inset-x-auto lg:top-3 lg:right-3 lg:bottom-3 lg:max-h-none lg:w-80"
     >
       <div className="card-body min-h-0 gap-4 overflow-y-auto p-4">
         <div className="flex items-center gap-1.5">
-          <span className={`badge badge-sm ${badge.className}`}>{badge.label}</span>
+          <span className={`badge badge-sm ${badge.className}`}>{title}</span>
           {node.origin === 'user' && <span className="badge badge-outline badge-sm">yours</span>}
           {node.edited && <span className="badge badge-outline badge-sm">edited</span>}
           <button
@@ -140,12 +142,22 @@ type LinkListProps = {
   side: 'claim' | 'evidence'
   empty: string
   links: Link[]
+  claimLabels: Map<string, string>
   onSelect: (id: string) => void
   onSetRelation: (edgeId: string, relation: Relation) => void
   onRemoveLink: (edgeId: string) => void
 }
 
-function LinkList({ title, side, empty, links, onSelect, onSetRelation, onRemoveLink }: LinkListProps) {
+function LinkList({
+  title,
+  side,
+  empty,
+  links,
+  claimLabels,
+  onSelect,
+  onSetRelation,
+  onRemoveLink,
+}: LinkListProps) {
   return (
     <section className="flex flex-col gap-1">
       <h3 className="text-xs font-semibold tracking-wide text-base-content/60 uppercase">
@@ -175,7 +187,11 @@ function LinkList({ title, side, empty, links, onSelect, onSetRelation, onRemove
                   className="list-col-grow text-left text-sm"
                   onClick={() => onSelect(node.id)}
                 >
-                  <TypeBadge type={node.type} className="mr-1.5 align-text-bottom" />
+                  <TypeBadge
+                    type={node.type}
+                    number={claimLabels.get(node.id)}
+                    className="mr-1.5 align-text-bottom"
+                  />
                   {node.text}
                 </button>
                 <button
