@@ -58,6 +58,8 @@ function NodePanel({
   return (
     <aside
       aria-label={`${title} details`}
+      // Locked cards are kept off this panel (useLockedNodes.ts).
+      data-lock-avoid
       className="card card-border absolute inset-x-2 bottom-2 z-10 max-h-[60%] bg-base-100 shadow-xl lg:inset-x-auto lg:top-3 lg:right-3 lg:bottom-3 lg:max-h-none lg:w-80"
     >
       <div className="card-body min-h-0 gap-4 overflow-y-auto p-4">

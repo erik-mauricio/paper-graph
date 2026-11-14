@@ -31,6 +31,42 @@ export function freeSpot(taken: Point[], start: Point): Point {
   return spot
 }
 
+export type Box = { x: number; y: number; width: number; height: number }
+
+const overlaps = (a: Box, b: Box) =>
+  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height
+
+// Where a locked card should sit: inside `bounds` (the canvas, from 0,0) and off
+// every obstacle (the toolbar, the details panel). When the card covers an
+// obstacle it moves to whichever side of it is closest and still on the canvas.
+export function keepClear(
+  card: Box,
+  bounds: { width: number; height: number },
+  obstacles: Box[],
+  gap = 8,
+): Point {
+  const inside = (p: Point) =>
+    p.x >= 0 && p.y >= 0 && p.x + card.width <= bounds.width && p.y + card.height <= bounds.height
+  let spot = {
+    x: Math.max(0, Math.min(card.x, bounds.width - card.width)),
+    y: Math.max(0, Math.min(card.y, bounds.height - card.height)),
+  }
+
+  for (const o of obstacles) {
+    if (!overlaps({ ...card, ...spot }, o)) continue
+    const moves = [
+      { x: o.x - card.width - gap, y: spot.y },
+      { x: o.x + o.width + gap, y: spot.y },
+      { x: spot.x, y: o.y - card.height - gap },
+      { x: spot.x, y: o.y + o.height + gap },
+    ].filter(inside)
+    const distance = (p: Point) => Math.abs(p.x - spot.x) + Math.abs(p.y - spot.y)
+    const best = moves.sort((a, b) => distance(a) - distance(b))[0]
+    if (best) spot = best
+  }
+  return spot
+}
+
 export function truncate(text: string, max = 48): string {
   return text.length > max ? `${text.slice(0, max - 1)}…` : text
 }
