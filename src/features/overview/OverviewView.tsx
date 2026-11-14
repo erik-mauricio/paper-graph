@@ -2,6 +2,7 @@
 // the study was done (question, design, participants, control and treatment
 // groups, measures), then the methods from the graph. The text form of the
 // study design; the graph shows the same methods in their own section.
+// Related work (from ResultsPage) goes at the end.
 import type { ReactNode } from 'react'
 import type { Fact, GraphNode, PaperContext, PaperGraph, Source, StudyGroup, StudyKind } from '@shared/graph'
 import { getLinksFrom } from '@/features/graph/model/graphQueries'
@@ -18,6 +19,8 @@ type OverviewViewProps = {
   // The user's current graph, for its method nodes.
   graph: PaperGraph
   onShowInPdf?: (item: Sourced) => void
+  // Shown last: the Related work section.
+  footer?: ReactNode
 }
 
 const KIND_LABEL: Record<StudyKind, string> = {
@@ -35,7 +38,7 @@ const ROLE_STYLE: Record<StudyGroup['role'], { label: string; className: string 
   comparison: { label: 'Comparison', className: 'badge-info' },
 }
 
-function OverviewView({ context, graph, onShowInPdf }: OverviewViewProps) {
+function OverviewView({ context, graph, onShowInPdf, footer }: OverviewViewProps) {
   const methods = graph.nodes.filter((n) => n.type === 'method')
 
   return (
@@ -78,6 +81,8 @@ function OverviewView({ context, graph, onShowInPdf }: OverviewViewProps) {
           ))}
         </FactSection>
       )}
+
+      {footer}
     </div>
   )
 }

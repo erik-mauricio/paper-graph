@@ -18,6 +18,8 @@ const useSample =
 function App() {
   const [file, setFile] = useState<File | null>(null)
   const [graph, setGraph] = useState<PaperGraph | null>(null)
+  // The first page's text, used to look the paper up for related work.
+  const [firstPage, setFirstPage] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [stage, setStage] = useState<LoadingStage>('reading')
 
@@ -26,6 +28,7 @@ function App() {
       <ResultsPage
         graph={sampleGraph}
         file={null}
+        firstPage=""
         fileName="sample.pdf"
         onReset={() => (window.location.search = '')}
       />
@@ -40,6 +43,7 @@ function App() {
 
     try {
       const pages = await extractText(newFile)
+      setFirstPage(pages[0]?.text ?? '')
       setStage('extracting')
       const result = await requestGraph(pages)
       setStage('checking')
@@ -73,7 +77,7 @@ function App() {
     return <LoadingPage fileName={file.name} stage={stage} />
   }
 
-  return <ResultsPage graph={graph} file={file} fileName={file.name} onReset={reset} />
+  return <ResultsPage graph={graph} file={file} firstPage={firstPage} fileName={file.name} onReset={reset} />
 }
 
 export default App

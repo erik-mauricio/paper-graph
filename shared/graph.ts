@@ -86,6 +86,9 @@ export type StudyDesign = {
 export type PaperContext = {
   // Two or three plain-language sentences on what the paper does and finds.
   summary: string
+  // 3 to 6 keywords naming the research topic, used to search for related
+  // work. Missing in graphs made before related work existed.
+  topic?: string
   // The problem and why it matters, from the paper's own introduction.
   background: Fact[]
   study: StudyDesign

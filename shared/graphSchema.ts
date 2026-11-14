@@ -31,6 +31,7 @@ const contextSchema = {
   type: 'object',
   properties: {
     summary: { type: 'string' },
+    topic: { type: 'string' },
     background: facts,
     study: {
       type: 'object',
@@ -62,7 +63,7 @@ const contextSchema = {
       additionalProperties: false,
     },
   },
-  required: ['summary', 'background', 'study'],
+  required: ['summary', 'topic', 'background', 'study'],
   additionalProperties: false,
 }
 

@@ -15,6 +15,7 @@ export const sampleGraph: PaperGraph = {
     summary:
       'The authors tracked how long 120 undergraduates slept and tested their memory each morning. ' +
       'Students who slept longer, and especially those who got more deep sleep, remembered more; a short nap did not make up for lost sleep.',
+    topic: 'sleep duration memory consolidation students',
     background: [
       {
         text: 'Many students cut sleep to study, but it is unclear how much this hurts memory for what they just learned.',

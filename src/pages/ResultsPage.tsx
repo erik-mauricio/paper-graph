@@ -10,6 +10,8 @@ import NodeFormModal from '@/features/graph/ui/NodeFormModal'
 import UndoToast from '@/features/graph/ui/UndoToast'
 import ListView from '@/features/list/ListView'
 import OverviewView from '@/features/overview/OverviewView'
+import RelatedWorkSection from '@/features/related/RelatedWorkSection'
+import { useRelatedWork } from '@/features/related/useRelatedWork'
 import type { FocusRequest } from '@/features/pdf/annotations'
 import PdfPanel from '@/features/pdf/PdfPanel'
 import { nextNonce } from '@/features/pdf/pdf'
@@ -21,6 +23,8 @@ type ResultsPageProps = {
   graph: PaperGraph
   // The uploaded PDF. Null in the dev sample, which has no PDF.
   file: File | null
+  // The PDF's first page of text, to look the paper up for related work.
+  firstPage: string
   fileName: string
   onReset: () => void
 }
@@ -30,8 +34,15 @@ type View = 'graph' | 'list' | 'overview'
 // Anything that can be shown in the PDF: a node, or a fact in the overview.
 type Sourced = { source?: Source }
 
-function ResultsPage({ graph, file, fileName, onReset }: ResultsPageProps) {
-  const [view, setView] = useState<View>('graph')
+function ResultsPage({ graph, file, firstPage, fileName, onReset }: ResultsPageProps) {
+  const [view, setViewState] = useState<View>('graph')
+  // Related work loads the first time the Overview opens, not before.
+  const related = useRelatedWork()
+  const relatedRequest = { title: graph.title, firstPage, topic: graph.context?.topic }
+  function setView(next: View) {
+    setViewState(next)
+    if (next === 'overview') related.start(relatedRequest)
+  }
   // Large screens: the PDF sits beside the graph/list.
   const [pdfOpen, setPdfOpen] = useState(false)
   // Small screens: the dock shows either the graph/list or the PDF.
@@ -146,7 +157,12 @@ function ResultsPage({ graph, file, fileName, onReset }: ResultsPageProps) {
               {view === 'list' ? (
                 <ListView graph={editor.graph} onShowInPdf={onShowInPdf} />
               ) : (
-                <OverviewView context={graph.context} graph={editor.graph} onShowInPdf={onShowInPdf} />
+                <OverviewView
+                  context={graph.context}
+                  graph={editor.graph}
+                  onShowInPdf={onShowInPdf}
+                  footer={<RelatedWorkSection state={related.state} onRetry={() => related.retry(relatedRequest)} />}
+                />
               )}
             </div>
           )}

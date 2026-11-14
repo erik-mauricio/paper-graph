@@ -3,7 +3,7 @@
 import type { PageText } from '../../shared/graph.ts'
 
 // Bump this whenever INSTRUCTIONS change, so cached graphs from the old prompt are not reused.
-export const PROMPT_VERSION = 2
+export const PROMPT_VERSION = 3
 
 const INSTRUCTIONS = `
 You are analyzing a research paper to help a student understand it: what it is about,
@@ -13,6 +13,9 @@ Find:
 1. The paper's title.
 2. "context", an overview of the paper:
    - "summary": two or three plain-language sentences on what the paper does and finds.
+   - "topic": 3 to 6 keywords naming the research topic in general terms, as you would
+     type into a search engine to find review articles on it (for example "sleep memory
+     consolidation students"). No paper-specific names or acronyms.
    - "background": 1 to 3 points on the problem the paper addresses and why it matters,
      taken from the paper's own introduction or background section.
    - "study": how the study was done.
