@@ -1,6 +1,7 @@
 // The interactive graph: React Flow canvas, selection, dragging nodes in and
-// out of sections, keyboard delete, and the floating menus. Linking gestures
-// live in useLinkGestures.ts. Rendered by pages/ResultsPage.tsx.
+// out of sections, keyboard delete, the floating menus, and locked cards.
+// Linking gestures live in useLinkGestures.ts, locking in useLockedNodes.ts.
+// Rendered by pages/ResultsPage.tsx.
 import {
   Background,
   Controls,
@@ -14,7 +15,7 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useMemo, useRef, useState, type MouseEvent } from 'react'
-import { getNeighborIds } from '@/features/graph/model/graphQueries'
+import { getClaimLabels, getNeighborIds } from '@/features/graph/model/graphQueries'
 import { NODE_HEIGHT, NODE_WIDTH, toFlowEdge, toFlowNodes, type ArgumentFlowEdge, type FlowNode } from '@/features/graph/model/layout'
 import { canLink } from '@/features/graph/model/linking'
 import type { GraphEditor } from '@/features/graph/editor/useGraphEditor'
@@ -24,6 +25,7 @@ import ArgumentNode from './ArgumentNode'
 import GraphTip from '@/features/graph/ui/GraphTip'
 import GraphToolbar from '@/features/graph/ui/GraphToolbar'
 import LinkMenu from '@/features/graph/ui/LinkMenu'
+import LockedCard from '@/features/graph/ui/LockedCard'
 import NodePanel from '@/features/graph/ui/NodePanel'
 import RelationPicker from '@/features/graph/ui/RelationPicker'
 import CanvasHint from './CanvasHint'
@@ -35,6 +37,7 @@ import Legend from './Legend'
 import SectionNode from './SectionNode'
 import { FIT_OPTIONS, useCamera } from './useCamera'
 import { useLinkGestures } from './useLinkGestures'
+import { useLockedNodes } from './useLockedNodes'
 
 const nodeTypes = { argument: ArgumentNode, section: SectionNode }
 const edgeTypes = { argument: ArgumentEdge }
@@ -98,6 +101,8 @@ function GraphCanvas({
   }
 
   const camera = useCamera({ positions, sections, wrapperRef, selectedId, focusRequest })
+  const locks = useLockedNodes({ graph, wrapperRef, selectedId })
+  const claimLabels = useMemo(() => getClaimLabels(graph), [graph])
 
   const neighbors = useMemo(
     () => (selectedId ? getNeighborIds(graph, selectedId) : null),
@@ -242,6 +247,8 @@ function GraphCanvas({
     onDeleteNode: deleteNode,
     canLink: (from, to) => canLink(graph, from, to),
     linkSource: linking.linkSource,
+    isLocked: locks.isLocked,
+    onToggleLock: locks.toggle,
     onSetRelation: editor.updateEdge,
     onRemoveLink: (edgeId) => {
       editor.deleteItems({ edgeIds: [edgeId] })
@@ -292,7 +299,8 @@ function GraphCanvas({
           <Background gap={20} />
           <Controls showInteractive={false} />
           {!selectedNode && <GraphMiniMap />}
-          <Panel position="top-left" className="flex flex-col items-start gap-2">
+          {/* data-lock-avoid: locked cards are kept off the toolbar (useLockedNodes.ts). */}
+          <Panel position="top-left" className="flex flex-col items-start gap-2" data-lock-avoid>
             <GraphToolbar
               edited={editor.edited}
               onAddNode={() => onAddNode()}
@@ -319,6 +327,27 @@ function GraphCanvas({
           </Panel>
         </ReactFlow>
       </GraphActionsContext.Provider>
+
+      {/* Outside React Flow, so panning and zooming the graph doesn't move them.
+          Below the details panel (z-10), which always stays on top. */}
+      {locks.locked.map((l) => {
+        const node = graph.nodes.find((n) => n.id === l.id)
+        if (!node) return null
+        return (
+          <LockedCard
+            key={l.id}
+            node={node}
+            claimLabel={claimLabels.get(l.id)}
+            x={l.x}
+            y={l.y}
+            expanded={l.expanded}
+            onMove={(card) => locks.move(l.id, card)}
+            onToggleExpanded={() => locks.toggleExpanded(l.id)}
+            onUnlock={() => locks.unlock(l.id)}
+            onSelect={() => focusNode(l.id)}
+          />
+        )
+      })}
 
       {selectedNode && (
         <NodePanel
