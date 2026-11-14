@@ -3,6 +3,7 @@ import { relationToClaim } from '@/features/graph/model/relations'
 import type { GraphNode, Relation } from '@shared/graph'
 import Quote from '@/components/Quote'
 import SourceMeta from '@/components/SourceMeta'
+import TypeBadge from '@/components/TypeBadge'
 
 type NodeDetailsProps = {
   node: GraphNode
@@ -24,8 +25,7 @@ function NodeDetails({ node, relation, onShowInPdf }: NodeDetailsProps) {
               {relationToClaim(relation)}
             </span>
           )}
-          {node.type === 'claim' && <span className="badge badge-sm badge-outline">claim</span>}
-          {node.type === 'note' && <span className="badge badge-sm badge-accent badge-soft">note</span>}
+          <TypeBadge type={node.type} />
           <p className="min-w-48 flex-1 font-reading font-medium leading-relaxed">{node.text}</p>
         </div>
 
