@@ -5,6 +5,8 @@ import { relationLabel } from '@/features/graph/model/relations'
 import type { GraphNode, PaperGraph, Relation, Section } from '@shared/graph'
 import Quote from '@/components/Quote'
 import SourceMeta from '@/components/SourceMeta'
+import TypeBadge from '@/components/TypeBadge'
+import { TYPE_BADGE } from '@/components/nodeTypes'
 
 type NodePanelProps = {
   graph: PaperGraph
@@ -19,12 +21,6 @@ type NodePanelProps = {
   onSetSection: (id: string, sectionId: string | null) => void
   onSetRelation: (edgeId: string, relation: Relation) => void
   onRemoveLink: (edgeId: string) => void
-}
-
-const TYPE_BADGE = {
-  claim: { label: 'Claim', className: 'badge-primary' },
-  evidence: { label: 'Evidence', className: 'badge-secondary' },
-  note: { label: 'Note', className: 'badge-accent' },
 }
 
 // Details of the selected node, floating over the graph.
@@ -179,6 +175,7 @@ function LinkList({ title, side, empty, links, onSelect, onSetRelation, onRemove
                   className="list-col-grow text-left text-sm"
                   onClick={() => onSelect(node.id)}
                 >
+                  <TypeBadge type={node.type} className="mr-1.5 align-text-bottom" />
                   {node.text}
                 </button>
                 <button
