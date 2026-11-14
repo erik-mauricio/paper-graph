@@ -1,7 +1,7 @@
 // The page after a paper is processed: the graph or list on the left, the PDF
 // (optional) on the right, plus the add/edit node dialog and the undo toast.
 import { useState, type CSSProperties } from 'react'
-import type { GraphNode, PaperGraph } from '@shared/graph'
+import type { PaperGraph, Source } from '@shared/graph'
 import AppNavbar from '@/app/AppNavbar'
 import GraphView from '@/features/graph/canvas/GraphView'
 import { useGraphEditor } from '@/features/graph/editor/useGraphEditor'
@@ -9,6 +9,7 @@ import { useNodeForm } from '@/features/graph/editor/useNodeForm'
 import NodeFormModal from '@/features/graph/ui/NodeFormModal'
 import UndoToast from '@/features/graph/ui/UndoToast'
 import ListView from '@/features/list/ListView'
+import OverviewView from '@/features/overview/OverviewView'
 import type { FocusRequest } from '@/features/pdf/annotations'
 import PdfPanel from '@/features/pdf/PdfPanel'
 import { nextNonce } from '@/features/pdf/pdf'
@@ -24,7 +25,10 @@ type ResultsPageProps = {
   onReset: () => void
 }
 
-type View = 'graph' | 'list'
+type View = 'graph' | 'list' | 'overview'
+
+// Anything that can be shown in the PDF: a node, or a fact in the overview.
+type Sourced = { source?: Source }
 
 function ResultsPage({ graph, file, fileName, onReset }: ResultsPageProps) {
   const [view, setView] = useState<View>('graph')
@@ -41,19 +45,19 @@ function ResultsPage({ graph, file, fileName, onReset }: ResultsPageProps) {
   const editor = useGraphEditor(file ? `graph:${paperKey(file)}` : 'graph:sample', graph)
   const nodeForm = useNodeForm(editor)
 
-  // Scrolls the PDF to a node's quote (without changing what's on screen).
-  function jumpTo(node: GraphNode) {
-    if (!file || !node.source) return
+  // Scrolls the PDF to a node's (or fact's) quote, without changing what's on screen.
+  function jumpTo(item: Sourced) {
+    if (!file || !item.source) return
     setPdfLoaded(true)
-    setFocus({ kind: 'quote', page: node.source.page, quote: node.source.quote, nonce: nextNonce() })
+    setFocus({ kind: 'quote', page: item.source.page, quote: item.source.quote, nonce: nextNonce() })
   }
 
-  // Opens the PDF and jumps to a node's quote.
-  function showInPdf(node: GraphNode) {
+  // Opens the PDF and jumps to a node's (or fact's) quote.
+  function showInPdf(item: Sourced) {
     if (!file) return
     setPdfOpen(true)
     setMobilePdf(true)
-    jumpTo(node)
+    jumpTo(item)
   }
 
   const onShowInPdf = file ? showInPdf : undefined
@@ -106,6 +110,7 @@ function ResultsPage({ graph, file, fileName, onReset }: ResultsPageProps) {
             <div role="tablist" aria-label="View" className="tabs tabs-box tabs-sm hidden lg:flex">
               <ViewTab label="Graph" active={view === 'graph'} onClick={() => setView('graph')} />
               <ViewTab label="List" active={view === 'list'} onClick={() => setView('list')} />
+              <ViewTab label="Overview" active={view === 'overview'} onClick={() => setView('overview')} />
             </div>
             <div className="tooltip tooltip-bottom hidden lg:block" data-tip={pdfTip}>
               <button
@@ -138,7 +143,11 @@ function ResultsPage({ graph, file, fileName, onReset }: ResultsPageProps) {
             />
           ) : (
             <div className="h-full overflow-y-auto">
-              <ListView graph={editor.graph} onShowInPdf={onShowInPdf} />
+              {view === 'list' ? (
+                <ListView graph={editor.graph} onShowInPdf={onShowInPdf} />
+              ) : (
+                <OverviewView context={graph.context} graph={editor.graph} onShowInPdf={onShowInPdf} />
+              )}
             </div>
           )}
         </div>
@@ -169,6 +178,7 @@ function ResultsPage({ graph, file, fileName, onReset }: ResultsPageProps) {
       <nav aria-label="View" className="dock dock-sm static shrink-0 border-t border-base-300 lg:hidden">
         <DockButton label="Graph" active={!mobilePdf && view === 'graph'} onClick={() => showMobile('graph')} />
         <DockButton label="List" active={!mobilePdf && view === 'list'} onClick={() => showMobile('list')} />
+        <DockButton label="Overview" active={!mobilePdf && view === 'overview'} onClick={() => showMobile('overview')} />
         <DockButton label="PDF" active={mobilePdf} disabled={!file} onClick={() => showMobile('pdf')} />
       </nav>
 

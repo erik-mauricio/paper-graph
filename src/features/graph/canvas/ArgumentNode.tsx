@@ -1,4 +1,4 @@
-// A claim, evidence, or note card on the canvas, with its "+" link handle,
+// A claim, evidence, method, or note card on the canvas, with its "+" link handle,
 // whole-card drop target, and quick-actions bar. Registered in GraphView.tsx.
 import { Handle, NodeToolbar, Position, useConnection, type NodeProps } from '@xyflow/react'
 import { useContext } from 'react'
@@ -10,6 +10,7 @@ import { GraphActionsContext } from './graphActions'
 const TYPE_STYLE: Record<NodeType, { label: string; badge: string; border: string }> = {
   claim: { label: 'Claim', badge: 'badge-primary', border: 'border-primary' },
   evidence: { label: 'Evidence', badge: 'badge-secondary', border: 'border-secondary' },
+  method: { label: 'Method', badge: 'badge-success', border: 'border-success' },
   note: { label: 'Note', badge: 'badge-accent', border: 'border-accent border-dashed' },
 }
 

@@ -29,7 +29,8 @@ type NodeFormModalProps = {
 
 const TYPES: { value: NodeType; label: string; hint: string }[] = [
   { value: 'claim', label: 'Claim', hint: 'A conclusion the paper (or you) argues for.' },
-  { value: 'evidence', label: 'Evidence', hint: 'A result, data, method, or citation that backs something up.' },
+  { value: 'evidence', label: 'Evidence', hint: 'A result, data, or citation that backs something up.' },
+  { value: 'method', label: 'Method', hint: 'How the study was done: its design, a group or condition, or what it measured.' },
   { value: 'note', label: 'Note', hint: 'Your own thought, question, or summary.' },
 ]
 

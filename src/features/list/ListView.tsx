@@ -1,5 +1,5 @@
 // The List view: claims with their evidence underneath, then unlinked
-// evidence and the user's notes. The alternative to the graph in ResultsPage.
+// evidence, methods, and the user's notes. The alternative to the graph in ResultsPage.
 import type { GraphNode, PaperGraph } from '@shared/graph'
 import { getClaimLabels, getLinksTo, getUnlinkedEvidence } from '@/features/graph/model/graphQueries'
 import ClaimItem from './ClaimItem'
@@ -17,6 +17,7 @@ function ListView({ graph, onShowInPdf }: ListViewProps) {
     .map((id) => graph.nodes.find((n) => n.id === id))
     .filter((n): n is GraphNode => Boolean(n))
   const unlinkedEvidence = getUnlinkedEvidence(graph)
+  const methods = graph.nodes.filter((n) => n.type === 'method')
   const notes = graph.nodes.filter((n) => n.type === 'note')
 
   return (
@@ -46,6 +47,18 @@ function ListView({ graph, onShowInPdf }: ListViewProps) {
             Evidence that was extracted but not connected to any claim.
           </p>
           {unlinkedEvidence.map((node) => (
+            <NodeDetails key={node.id} node={node} onShowInPdf={onShowInPdf} />
+          ))}
+        </section>
+      )}
+
+      {methods.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <div className="divider my-0">Methods ({methods.length})</div>
+          <p className="text-sm text-base-content/60">
+            How the study was done. The Overview tab shows the full study design.
+          </p>
+          {methods.map((node) => (
             <NodeDetails key={node.id} node={node} onShowInPdf={onShowInPdf} />
           ))}
         </section>

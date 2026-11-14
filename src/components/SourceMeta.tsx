@@ -1,15 +1,16 @@
 // A node's page number, an "Unverified" badge if its quote wasn't found, and
-// "Show in PDF". Shared by the graph panel and List view.
-import type { GraphNode } from '@shared/graph'
+// "Show in PDF". Shared by the graph panel, List view, and Overview.
+import type { Source } from '@shared/graph'
 
-type SourceMetaProps = {
-  node: GraphNode
-  onShowInPdf?: (node: GraphNode) => void
+// Anything with a quote from the paper: a node, or a fact in the overview.
+type SourceMetaProps<T extends { source?: Source }> = {
+  node: T
+  onShowInPdf?: (node: T) => void
 }
 
 // Where a node's quote comes from: page, whether it was verified, and a
 // button to jump to it in the PDF.
-function SourceMeta({ node, onShowInPdf }: SourceMetaProps) {
+function SourceMeta<T extends { source?: Source }>({ node, onShowInPdf }: SourceMetaProps<T>) {
   // The user's own notes have no source in the paper.
   if (!node.source) return null
 

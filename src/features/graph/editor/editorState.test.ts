@@ -6,6 +6,26 @@ import * as edit from './editorState'
 
 const start = () => edit.fromAi(sampleGraph)
 const note = (id: string): GraphNode => ({ id, type: 'note', text: 'mine', origin: 'user' })
+const sectionById = (s: edit.EditorState, id: string) => s.sections.find((sec) => sec.id === id)
+
+describe('fromAi', () => {
+  it('puts the method nodes in a "Methods" section right of the argument', () => {
+    const s = start()
+    const methods = sectionById(s, edit.METHODS_SECTION_ID)!
+    expect(methods).toBeDefined()
+    for (const id of ['m1', 'm2', 'm3']) expect(s.positions[id].sectionId).toBe(methods.id)
+
+    const argumentRight = Math.max(
+      ...sampleGraph.nodes.filter((n) => n.type !== 'method').map((n) => s.positions[n.id].x + NODE_WIDTH),
+    )
+    expect(methods.x).toBeGreaterThan(argumentRight)
+  })
+
+  it('makes no sections for a paper without methods', () => {
+    const graph: PaperGraph = { ...sampleGraph, nodes: sampleGraph.nodes.filter((n) => n.type !== 'method') }
+    expect(edit.fromAi(graph).sections).toEqual([])
+  })
+})
 
 describe('addNode', () => {
   it('places a node at a given spot', () => {
@@ -29,7 +49,7 @@ describe('addNode', () => {
     s = edit.addSection(s, section)
     s = edit.addNode(s, note('u1'), 's1', { x: section.x + 300, y: section.y + 250 })
     expect(s.positions.u1).toEqual({ x: 300, y: 250, sectionId: 's1' })
-    expect(s.sections[0].width).toBeGreaterThanOrEqual(300 + NODE_WIDTH)
+    expect(sectionById(s, 's1')!.width).toBeGreaterThanOrEqual(300 + NODE_WIDTH)
   })
 })
 
@@ -66,7 +86,7 @@ describe('deleteItems', () => {
     let s = edit.addSection(start(), { id: 's1', name: 'S', color: 'blue', x: 100, y: 200, width: 400, height: 300 })
     s = edit.moveNode(s, 'e1', { x: 10, y: 50, sectionId: 's1' })
     s = edit.deleteItems(s, { sectionIds: ['s1'] })
-    expect(s.sections).toHaveLength(0)
+    expect(sectionById(s, 's1')).toBeUndefined()
     expect(s.positions.e1).toEqual({ x: 110, y: 250, sectionId: null })
   })
 
@@ -82,7 +102,7 @@ describe('resizeSection', () => {
     s = edit.moveNode(s, 'e1', { x: 50, y: 60, sectionId: 's1' })
     s = edit.resizeSection(s, 's1', { x: 80, y: 90, width: 420, height: 310 })
     expect(s.positions.e1).toEqual({ x: 70, y: 70, sectionId: 's1' })
-    expect(s.sections[0]).toMatchObject({ x: 80, y: 90, width: 420, height: 310 })
+    expect(sectionById(s, 's1')).toMatchObject({ x: 80, y: 90, width: 420, height: 310 })
   })
 })
 

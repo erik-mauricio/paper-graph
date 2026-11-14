@@ -11,6 +11,14 @@ describe('initialPositions (claim-first)', () => {
     }
   })
 
+  it('puts methods in their own column, right of everything else', () => {
+    const methods = sampleGraph.nodes.filter((n) => n.type === 'method').map((n) => n.id)
+    const others = sampleGraph.nodes.filter((n) => n.type !== 'method').map((n) => n.id)
+    const columns = new Set(methods.map((id) => pos[id].x))
+    expect(columns.size).toBe(1)
+    expect(Math.min(...methods.map((id) => pos[id].x))).toBeGreaterThan(Math.max(...others.map((id) => pos[id].x)))
+  })
+
   it('puts unlinked evidence in the evidence column, below everything else', () => {
     // e8 has no links in the sample.
     const evidenceColumn = Math.min(...sampleGraph.edges.map((e) => pos[e.from].x))

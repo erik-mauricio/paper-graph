@@ -1,4 +1,4 @@
-// Buttons for switching between Graph, List, and PDF on the results page:
+// Buttons for switching between Graph, List, Overview, and PDF on the results page:
 // tabs in the navbar on large screens, a dock at the bottom on small ones.
 
 type SwitchButtonProps = {
